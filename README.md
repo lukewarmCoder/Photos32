@@ -21,8 +21,9 @@ Photos32/
 ```
 
 ## Prerequisites
-- Java 21 installed
-- JavaFX SDK 21.0.6 (download from https://gluonhq.com/products/javafx/)
+Before running this project, make sure you have the following installed:
+- Java 21
+- JavaFX SDK 21.0.6 (You can download from [here](https://gluonhq.com/products/javafx/)
 
 ## How to Run
 ### Step 1: Clone the Repository
