@@ -1,5 +1,24 @@
 # Photos32
 
+## Project Structure
+```
+Photos32/
+|── bin/
+|── data/
+|── docs/
+│── src/
+│   └── photos32/
+│       ├── model/
+│       │   └── Counter.java
+│       ├── view/
+│       │   └── CounterView.fxml
+│       ├── controller/
+│       │   └── CounterController.java
+│       └── Photos.java
+│── .gitignore
+|── README.md
+```
+
 ## Prerequisites
 - Java 21 installed
 - JavaFX SDK 21.0.6 (download from https://gluonhq.com/products/javafx/)
