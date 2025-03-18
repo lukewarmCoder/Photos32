@@ -27,23 +27,45 @@ Before running this project, make sure you have the following installed:
 
 ## Getting Started
 
-### Step 1. Clone the Repository
-- Clone this repository to your local machine using Git:
-``
-git clone https://github.com/yourusername/Photos32.git
-``
-- Navigate to the project folder
-``
+### Step 1: Clone the Repository
+1. Clone this repository to your local machine using Git:
+```
+git clone https://github.com/lukewarmCoder/Photos32.git
+```
+
+3. Navigate to the project folder:
+```
 cd Photos32
-``
+```
 
-### Step 2. Identify the path to your JavaFX SDK
+### Step 2: Identify the path to your JavaFX SDK
 
-You need to point to the lib/ folder inside the JavaFX SDK you downloaded.
-- Example: /Library/Java/JavaFX21/javafx-sdk-21.0.6/lib/
+1. You need to point to the lib/ folder inside the JavaFX SDK you downloaded.
+    - Example: /Library/Java/JavaFX21/javafx-sdk-21.0.6/lib/
 
+2. Set the temporary variable PATH_TO_FX to your JavaFX SDK path:
+```
+export PATH_TO_FX=/path/to/javafx-sdk/lib/
+```
 
+(This will only affect the current terminal session and will not persist after you close the terminal.)
 
 ### Step 3: Compile and Run
+
+1. Compile the code
+```
+javac --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -d bin src/photos32/**/*.java
+```
+
+2. Run the application
+```
+java --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -cp bin photos32.Photos
+```
+
+### Step 4: Enjoy the App
+
+Once you've completed the above steps, the application should start and the interface should be displayed.
+
+
 
 
