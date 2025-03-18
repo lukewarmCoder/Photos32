@@ -1,4 +1,5 @@
 # Photos32
+A single-user photo application that allows storage and management of photos.
 
 ## Project Structure
 ```
@@ -23,7 +24,13 @@ Photos32/
 - Java 21 installed
 - JavaFX SDK 21.0.6 (download from https://gluonhq.com/products/javafx/)
 
-### Step 1: Get path
+## How to Run
+### Step 1: Clone the Repository
+1. Clone the repository to your local machine using Git:
+`` git clone https://github.com/yourusername/JavaFXApp.git ``
+
+2. Navigate to the project folder
+`` cd JavaFXApp ``
 
 1. Retrieve the path to your JavaFX `lib` directory.
    - Ex.) /Library/Java/JavaFX21/javafx-sdk-21.0.6/lib/
