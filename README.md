@@ -41,7 +41,7 @@ cd Photos32
 ### Step 2: Identify the path to your JavaFX SDK
 
 1. You need to point to the lib/ folder inside the JavaFX SDK you downloaded.
-    - Example: /Library/Java/JavaFX21/javafx-sdk-21.0.6/lib/
+    - Example: /Downloads/javafx-sdk-21.0.6/lib/
 
 2. Set the temporary variable PATH_TO_FX to your JavaFX SDK path:
 ```
