@@ -23,25 +23,27 @@ Photos32/
 ## Prerequisites
 Before running this project, make sure you have the following installed:
 - Java 21
-- JavaFX SDK 21.0.6 (You can download from [here](https://gluonhq.com/products/javafx/)
+- JavaFX SDK 21.0.6 (You can download the JavaFX SDK from [here](https://gluonhq.com/products/javafx/))
 
-## How to Run
-### Step 1: Clone the Repository
-1. Clone the repository to your local machine using Git:
+## Getting Started
+
+### Step 1. Clone the Repository
+- Clone this repository to your local machine using Git:
 ``
-git clone https://github.com/yourusername/JavaFXApp.git
+git clone https://github.com/yourusername/Photos32.git
+``
+- Navigate to the project folder
+``
+cd Photos32
 ``
 
-3. Navigate to the project folder
-`` cd JavaFXApp ``
+### Step 2. Identify the path to your JavaFX SDK
 
-1. Retrieve the path to your JavaFX `lib` directory.
-   - Ex.) /Library/Java/JavaFX21/javafx-sdk-21.0.6/lib/
+You need to point to the lib/ folder inside the JavaFX SDK you downloaded.
+- Example: /Library/Java/JavaFX21/javafx-sdk-21.0.6/lib/
 
-### Step 2: Compile
 
-`javac -d bin --module-path (path to your JavaFX library) --add-modules javafx.controls,javafx.fxml src/photos32/**/*.java`
 
-### Step 3: Run
+### Step 3: Compile and Run
 
 
