@@ -27,9 +27,11 @@ Photos32/
 ## How to Run
 ### Step 1: Clone the Repository
 1. Clone the repository to your local machine using Git:
-`` git clone https://github.com/yourusername/JavaFXApp.git ``
+``
+git clone https://github.com/yourusername/JavaFXApp.git
+``
 
-2. Navigate to the project folder
+3. Navigate to the project folder
 `` cd JavaFXApp ``
 
 1. Retrieve the path to your JavaFX `lib` directory.
