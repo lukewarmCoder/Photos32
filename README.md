@@ -62,7 +62,7 @@ javac --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -d bin
 java --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -cp bin photos32.Photos
 ```
 
-### Step 4: Enjoy the App
+### Step 4: Enjoy the App!
 
 Once you've completed the above steps, the application should start and the interface should be displayed.
 

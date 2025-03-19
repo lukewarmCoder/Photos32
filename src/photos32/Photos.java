@@ -9,14 +9,13 @@ import javafx.scene.Parent;
 public class Photos extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/photos32/view/login.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/photos32/view/Login.fxml"));
         stage.setScene(new Scene(root));
-        stage.setTitle("MVC Example");
+        stage.setTitle("Photo32 App - Login");
         stage.show();
     }
 
     public static void main(String[] args) {
-        System.out.println("hoi");
         launch(args);
     }
 }
