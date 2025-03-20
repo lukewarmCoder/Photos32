@@ -1,18 +1,24 @@
 package photos32.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+import photos32.model.User;
 
 public class LoginController {
-    @FXML
-    private TextField usernameField;
 
-    @FXML
-    private Label errorLabel;
+    @FXML private TextField usernameField;
+    @FXML private Label errorLabel;
 
     @FXML
     private void handleLogin() {
@@ -23,35 +29,72 @@ public class LoginController {
             return;
         }
 
-        // Basic logic: If admin → go to admin subsystem, else → go to user subsystem
         if (username.equals("admin")) {
             loadAdminScreen();
         } else {
-            loadUserHomeScreen(username);
+            User user = loadOrCreateUser(username);
+            loadUserScreen(user);
         }
     }
 
     private void loadAdminScreen() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/Admin.fxml"));
-            Parent root = loader.load();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/AdminHome.fxml"));
+            Scene scene = new Scene(loader.load());
+
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
             stage.setTitle("Admin Panel");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void loadUserHomeScreen(String username) {
+    private void loadUserScreen(User user) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/UserHome.fxml"));
-            Parent root = loader.load();
-            // You can pass the username to UserHomeController here if needed
+            Scene scene = new Scene(loader.load());
+
+            // Pass user object to UserHomeController
+            UserHomeController controller = loader.getController();
+            controller.setUser(user);
+
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("User Home");
+            stage.setScene(scene);
+            stage.setTitle("User Home - ");
+
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private User loadOrCreateUser(String username) {
+        File userFile = new File("data/" + username + ".dat");
+        if (userFile.exists()) {
+            // Deserialize existing user
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userFile))) {
+                return (User) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+                errorLabel.setText("Error loading user data.");
+                return new User(username); // fallback
+            }
+        } else {
+            // Create new user
+            User newUser = new User(username);
+            saveUser(newUser);
+            return newUser;
+        }
+    }
+
+    private void saveUser(User user) {
+        File dir = new File("data");
+        if (!dir.exists()) dir.mkdir();
+
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
+            oos.writeObject(user);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

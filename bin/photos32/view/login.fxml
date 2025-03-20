@@ -4,8 +4,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
 
-<VBox spacing="15" alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="photos32.controller.LoginController">
-    <Label text="Photo32 Login" style="-fx-font-size: 20px;"/>
+<VBox spacing="15" alignment="CENTER" xmlns="http://javafx.com/javafx/8" 
+    xmlns:fx="http://javafx.com/fxml/1" 
+    fx:controller="photos32.controller.LoginController">
+    
+    <Label style="-fx-font-size: 20px;" text="Photo32 Login"/>
     
     <HBox spacing="10" alignment="CENTER">
         <Label text="Username:"/>
