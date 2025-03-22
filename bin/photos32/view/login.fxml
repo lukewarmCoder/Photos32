@@ -16,6 +16,5 @@
     </HBox>
 
     <Button text="Login" onAction="#handleLogin"/>
-
     <Label fx:id="errorLabel" textFill="red"/>
 </VBox>

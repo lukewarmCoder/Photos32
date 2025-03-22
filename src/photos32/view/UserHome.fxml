@@ -26,7 +26,7 @@
                </padding>
                <children>
                   <Button fx:id="signOutButton" mnemonicParsing="false" text="Sign Out" onAction="#handleSignOut" />
-                  <Label alignment="CENTER" maxWidth="Infinity" HBox.hgrow="ALWAYS" text="Welcome, brotha" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                  <Label fx:id="userHomeHeader" alignment="CENTER" maxWidth="Infinity" HBox.hgrow="ALWAYS" text="" style="-fx-font-size: 16px;" />
                   <Button mnemonicParsing="false" text="New Album" onAction="#handleCreateAlbum" />
                </children>
             </HBox>

@@ -1,31 +1,29 @@
 package photos32.controller;
 
+import java.io.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.scene.layout.StackPane;
-import javafx.scene.control.Alert.AlertType;
-
+import java.util.Optional;
 
 import photos32.model.Album;
 import photos32.model.User;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Optional;
-
 public class UserHomeController {
 
     @FXML private FlowPane albumContainer;
-    @FXML private Button newAlbumButton;
+    @FXML private Label userHomeHeader;
+    @FXML private Button signOutButton;
 
     private User user;
+
+    public void setHeader(User user) {
+        userHomeHeader.setText("Welcome, " + user.getUsername());
+    }
 
     public void setUser(User user) {
         this.user = user;
@@ -36,11 +34,9 @@ public class UserHomeController {
         return user;
     }
 
-    public void refresh() {
-        populateAlbumTiles();
-    }
-
-    private void populateAlbumTiles() {
+    // Append the album cards for each user to the album container in UserHome.fxml
+    public void populateAlbumTiles() {
+        // First, remove all present album cards
         albumContainer.getChildren().clear();
 
         for (Album album : user.getAlbums()) {
@@ -62,75 +58,95 @@ public class UserHomeController {
     
     @FXML
     private void handleCreateAlbum() {
-        // Create a dialog for the user to enter the title
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("New Album");
-        dialog.setHeaderText("Enter the title for your new album:");
-        dialog.setContentText("Title:");
-
-        // Get the result of the dialog (user input)
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent() && !result.get().trim().isEmpty()) {
-            String albumTitle = result.get().trim();
-
-            // Check for duplicate album titles
-            for (Album album : user.getAlbums()) {
-                if (album.getTitle().equalsIgnoreCase(albumTitle)) {
-                    System.out.println("Album with this title already exists!");
-                    Alert alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Information");
-                    alert.setHeaderText("Error: Duplicate Album");
-                    alert.setContentText("An album with that name already exists!");
-                    alert.showAndWait();
-                    return;
-                }
+        boolean validInput = false;
+        String title = null;
+        
+        while (!validInput) {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("New Album");
+            dialog.setHeaderText("Enter the title for your new album:");
+            dialog.setContentText("Title:");
+            
+            Optional<String> result = dialog.showAndWait();
+            
+            // If user clicks Cancel/Close
+            if (!result.isPresent()) {
+                return; // Exit the method entirely
             }
+            
+            title = result.get().trim();
+            
+            // Check if the title is empty
+            if (title.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                showAlert(alert, "Information", "Error: Invalid Album Name", 
+                        "Album names cannot be empty!");
+                alert.showAndWait();
+                continue; // Go back to the start of the loop
+            }
+            
+            // Check for duplicate titles
+            if (isDuplicateAlbum(user, title)) {
+                // if (album.getTitle().equals(newTitle)) break;
 
-            Album newAlbum = new Album(albumTitle);
-            user.getAlbums().add(newAlbum);
-            saveUser();
-            populateAlbumTiles();
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                showAlert(alert, "Information", "Error: Duplicate Album", 
+                        "An album with that name already exists!");
+                alert.showAndWait();
+                continue; // Go back to the start of the loop
+            }
+            
+            // If we reach here, the input is valid
+            validInput = true;
         }
-    }
-
-
-    @FXML
-    private void handleDeleteAlbum(Album album) {
-        user.getAlbums().remove(album);
+        
+        createAlbum(user, title);
         saveUser();
         populateAlbumTiles();
     }
 
-    @FXML
-    private void handleRenameAlbum(Album album) {
-        TextInputDialog dialog = new TextInputDialog(album.getTitle());
-        dialog.setTitle("Rename Album");
-        dialog.setHeaderText("Enter a new title for the album:");
-        dialog.setContentText("New title:");
-
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent() && !result.get().trim().isEmpty()) {
-            String newTitle = result.get().trim();
-
-            // Check for duplicate
-            for (Album other : user.getAlbums()) {
-                if (other != album && other.getTitle().equalsIgnoreCase(newTitle)) {
-                    System.out.println("Another album already has this title!");
-                    return;
-                }
+    // Check for duplicate album titles
+    private boolean isDuplicateAlbum(User user, String title) {
+        for (Album album : user.getAlbums()) {
+            if (album.getTitle().equalsIgnoreCase(title)) {
+                return true;
             }
-
-            album.setTitle(newTitle);
-            saveUser();
         }
+        return false;
     }
+
+    private void createAlbum(User user, String title) {
+        Album newAlbum = new Album(title);
+        user.getAlbums().add(newAlbum);
+    }
+
 
     @FXML
     private void handleOpenAlbum() {
         System.out.println("hi");
     }
 
-    void saveUser() {
+    @FXML
+    private void handleSignOut() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        showAlert(alert, "Confirmation", null, "Are you sure you want to sign out?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/Login.fxml"));
+                Scene scene = new Scene(loader.load());
+
+                Stage stage = (Stage)signOutButton.getScene().getWindow();
+                stage.setScene(scene);
+                stage.setTitle("Photo32 Login");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void saveUser() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
             oos.writeObject(user);
         } catch (IOException e) {
@@ -138,31 +154,10 @@ public class UserHomeController {
         }
     }
 
-
-
-    @FXML private Button signOutButton;
-
-    @FXML
-    private void handleSignOut() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-    alert.setTitle("Confirm Sign Out");
-    alert.setHeaderText(null);
-    alert.setContentText("Are you sure you want to sign out?");
-
-    Optional<ButtonType> result = alert.showAndWait();
-    if (result.isPresent() && result.get() == ButtonType.OK) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/Login.fxml"));
-            Scene scene = new Scene(loader.load());
-
-            Stage stage = (Stage) signOutButton.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Photo32 Login");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    private void showAlert(Alert alert, String title, String header, String content) {
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
     }
 
 }

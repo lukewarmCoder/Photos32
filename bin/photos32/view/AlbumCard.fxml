@@ -17,7 +17,7 @@
       <!-- Header with title and menu button -->
       <HBox alignment="CENTER" prefHeight="40.0" prefWidth="300.0" style="-fx-background-color: #e0e0e0;">
          <children>
-            <Label fx:id="albumTitle" text="Album Title">
+            <Label fx:id="albumTitle" text="">
                <font>
                   <Font size="16.0" />
                </font>

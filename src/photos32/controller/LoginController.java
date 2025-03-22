@@ -1,12 +1,6 @@
 package photos32.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
+import java.io.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -29,69 +23,68 @@ public class LoginController {
             return;
         }
 
-        if (username.equals("admin")) {
-            loadAdminScreen();
-        } else {
-            User user = loadOrCreateUser(username);
-            loadUserScreen(user);
-        }
-    }
-
-    private void loadAdminScreen() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/AdminHome.fxml"));
-            Scene scene = new Scene(loader.load());
-
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Admin Panel");
-
+            if (username.equals("admin")) {
+                // Load the admin screen
+                loadScreen("/photos32/view/AdminHome.fxml", null);
+            } else {
+                // Load the user screen
+                User user = getOrCreateUser(username);
+                loadScreen("/photos32/view/UserHome.fxml", user);
+            }
         } catch (Exception e) {
+            errorLabel.setText("Error: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private void loadUserScreen(User user) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/UserHome.fxml"));
-            Scene scene = new Scene(loader.load());
+    private void loadScreen(String fxmlPath, User user) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        Scene scene = new Scene(loader.load());
 
+        if (user != null) {
             // Pass user object to UserHomeController
             UserHomeController controller = loader.getController();
             controller.setUser(user);
+            controller.setHeader(user);
+        }
 
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("User Home - ");
+        Stage stage = (Stage)usernameField.getScene().getWindow();
+        stage.setScene(scene);
+        stage.setTitle("Photo 32");
+    }
 
+    private User getOrCreateUser(String username) {
+        try {
+            User user = loadUser(username);
+            if (user == null) {
+                // If the user does not exist, we create a new user
+                user = new User(username);
+                saveUser(user);
+            }
+            return user;
         } catch (Exception e) {
             e.printStackTrace();
+            return new User(username); // Fallback
         }
     }
 
-    private User loadOrCreateUser(String username) {
+    // Attempts to load a User object from storage
+    private User loadUser(String username) throws IOException, ClassNotFoundException {
         File userFile = new File("data/" + username + ".dat");
         if (userFile.exists()) {
-            // Deserialize existing user
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userFile))) {
-                return (User) ois.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-                errorLabel.setText("Error loading user data.");
-                return new User(username); // fallback
+                return (User)ois.readObject();
             }
-        } else {
-            // Create new user
-            User newUser = new User(username);
-            saveUser(newUser);
-            return newUser;
         }
+        return null; // User doesn't exist
     }
 
+    /* 
+    Creates a user.dat file if the user is being saved for the first time.
+    Overwrites the user's .dat file if the user has already been saved once.
+    */
     private void saveUser(User user) {
-        File dir = new File("data");
-        if (!dir.exists()) dir.mkdir();
-
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
             oos.writeObject(user);
         } catch (IOException e) {
