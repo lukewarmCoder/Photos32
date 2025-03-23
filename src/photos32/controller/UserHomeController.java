@@ -32,7 +32,7 @@ public class UserHomeController {
 
     public User getUser() {
         return user;
-    }
+    } 
 
     // Append the album cards for each user to the album container in UserHome.fxml
     public void populateAlbumTiles() {
@@ -49,7 +49,7 @@ public class UserHomeController {
                 albumCardController.setParentController(this); // Pass reference to parent
                 
                 albumContainer.getChildren().add(albumCard);
-    
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -120,10 +120,27 @@ public class UserHomeController {
         user.getAlbums().add(newAlbum);
     }
 
-
-    @FXML
-    private void handleOpenAlbum() {
-        System.out.println("hi");
+    public void openAlbum(Album album) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/AlbumView.fxml"));
+            Scene scene = new Scene(loader.load());
+            
+            // Get the controller and pass necessary data
+            AlbumViewController controller = loader.getController();
+            controller.setAlbum(album);
+            controller.setUser(user);  // Pass the current user
+            
+            // Update the UI elements
+            controller.setHeader();
+            controller.populatePhotoTiles();
+            
+            // Display the scene
+            Stage stage = (Stage)albumContainer.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Photo32");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

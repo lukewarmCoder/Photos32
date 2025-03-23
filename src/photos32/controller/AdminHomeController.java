@@ -1,8 +1,10 @@
 package photos32.controller;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -31,7 +33,7 @@ import javafx.stage.Stage;
 
 import photos32.model.User;
 
-public class AdminHomeController implements Initializable {
+public class AdminHomeController  {
 
     @FXML private Button signOutButton;
     @FXML private ToggleButton toggleUsersButton;
@@ -39,8 +41,8 @@ public class AdminHomeController implements Initializable {
 
     private List<User> users;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    @FXML
+    public void initialize() {
         users = loadUsers();
     }
 
@@ -90,14 +92,10 @@ public class AdminHomeController implements Initializable {
     private List<User> loadUsers() {
         List<User> users = new ArrayList<>();
 
-        try {
-            // Get the list of all files in the data folder
-            DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get("data/"));
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get("data/"))) {
             for (Path path : stream) {
-                // Check if the file ends with .dat extension
                 if (path.toString().endsWith(".dat")) {
                     try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                        // Deserialize the user object from the file
                         User user = (User) ois.readObject();
                         users.add(user);
                     } catch (IOException | ClassNotFoundException e) {
@@ -108,7 +106,6 @@ public class AdminHomeController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return users;
     }
 
@@ -122,34 +119,46 @@ public class AdminHomeController implements Initializable {
             Path userFile = Paths.get("data/", user.getUsername() + ".dat");
 
             try {
+
                 // Delete the user file
                 Files.deleteIfExists(userFile);
 
-                // Create a list to collect nodes that should be removed
-                List<Node> nodesToRemove = new ArrayList<>();
+                // Reload the users list
+                users = loadUsers();
 
-                // Iterate over the children and find the node to remove
-                for (Node node : userListContainer.getChildren()) {
-                    if (node instanceof HBox) {
-                        HBox hbox = (HBox) node;
-                        for (Node child : hbox.getChildren()) {
-                            if (child instanceof Label) {
-                                Label label = (Label) child;
-                                if (label.getText().equals(user.getUsername())) {
-                                    nodesToRemove.add(node);  // Add the node to the removal list
-                                    break;  // Stop looking once the user is found
-                                }
-                            }
-                        }
-                    }
+                // Refresh the UI
+                if (toggleUsersButton.isSelected()) {
+                    showUsers();
                 }
 
-                // After the iteration, remove all collected nodes
-                userListContainer.getChildren().removeAll(nodesToRemove);
+                // // Delete the user file
+                // Files.deleteIfExists(userFile);
+
+                // // Create a list to collect nodes that should be removed
+                // List<Node> nodesToRemove = new ArrayList<>();
+
+                // // Iterate over the children and find the node to remove
+                // for (Node node : userListContainer.getChildren()) {
+                //     if (node instanceof HBox) {
+                //         HBox hbox = (HBox) node;
+                //         for (Node child : hbox.getChildren()) {
+                //             if (child instanceof Label) {
+                //                 Label label = (Label) child;
+                //                 if (label.getText().equals(user.getUsername())) {
+                //                     nodesToRemove.add(node);  // Add the node to the removal list
+                //                     break;  // Stop looking once the user is found
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+
+                // // After the iteration, remove all collected nodes
+                // userListContainer.getChildren().removeAll(nodesToRemove);
                 
-                // Remove the user from the UI
-                List<User> users = loadUsers();
-                users.remove(user);
+                // // Remove the user from the UI
+                // List<User> users = loadUsers();
+                // users.remove(user);
                 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -201,8 +210,12 @@ public class AdminHomeController implements Initializable {
         }
 
         User user = new User(username);
-        // Serialize
-        // Add to the UI list
+        saveUser(user);
+        users = loadUsers();
+        
+        if (toggleUsersButton.isSelected()) {
+            showUsers();
+        }
     }
 
     private boolean isDuplicateUser(String username) {
@@ -230,6 +243,14 @@ public class AdminHomeController implements Initializable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void saveUser(User user) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
+            oos.writeObject(user);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -13,6 +13,8 @@ public class Photos extends Application {
         stage.setScene(new Scene(root));
         stage.setWidth(800);
         stage.setHeight(600);
+        stage.setMinWidth(800);
+        stage.setMinHeight(600);
         stage.setTitle("Photo32 App - Login");
         stage.show();
     }
