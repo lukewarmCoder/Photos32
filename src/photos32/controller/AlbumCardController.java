@@ -20,6 +20,7 @@ public class AlbumCardController {
     @FXML private VBox albumCard;
     @FXML private Label albumTitle;
     @FXML private Label infoText;
+    @FXML private Label numOfPhotos;
     
     private Album album;
     private UserHomeController parentController;
@@ -35,6 +36,7 @@ public class AlbumCardController {
     public void setAlbum(Album album) {
         this.album = album;
         albumTitle.setText(album.getTitle());
+        numOfPhotos.setText(String.valueOf(album.getPhotoCount()));
     }
 
     @FXML

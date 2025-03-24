@@ -57,7 +57,7 @@
                </HBox.margin>
             </Label>
             <Region prefHeight="30.0" prefWidth="63.0" HBox.hgrow="ALWAYS" />
-            <Label text="# of photos" />
+            <Label fx:id="numOfPhotos" text="# of photos" />
          </children>
          <VBox.margin>
             <Insets />

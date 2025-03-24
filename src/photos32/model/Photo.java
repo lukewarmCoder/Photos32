@@ -60,4 +60,18 @@ public class Photo implements Serializable {
         return caption.isEmpty() ? filepath : caption;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        
+        Photo photo = (Photo) o;
+        
+        // Compare based on filepath, caption, dateTime, and tags
+        return filepath.equals(photo.filepath) && 
+            caption.equals(photo.caption) && 
+            dateTime.equals(photo.dateTime) && 
+            tags.equals(photo.tags);
+    }
+
 }

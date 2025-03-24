@@ -29,6 +29,7 @@ public class Album implements Serializable {
         return photos.size();
     }
 
+
     // public Date getEarliestDate() { /* logic here */ }
     // public Date getLatestDate() { /* logic here */ }
     

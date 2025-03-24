@@ -9,7 +9,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -32,6 +31,10 @@ public class AlbumViewController {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     public Album getAlbum() {
@@ -57,14 +60,12 @@ public class AlbumViewController {
                 photoCardController.setParentController(this); // Pass reference to parent
                 
                 photoContainer.getChildren().add(photoCard);
-    
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
     
-
     @FXML
     private void handleCreatePhoto() {
         FileChooser fileChooser = new FileChooser();
@@ -79,9 +80,8 @@ public class AlbumViewController {
         if (selectedFile != null) {
             // Intermediary confirmation window with file path
             Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmDialog.setTitle("Confirm Selection");
-            confirmDialog.setHeaderText("Confirm Image Selection");
-            confirmDialog.setContentText("File: " + selectedFile.getAbsolutePath());
+            showAlert(confirmDialog, "Confirm Selection", "Confirm Image Selection", 
+                "File: " + selectedFile.getAbsolutePath());
 
             Optional<ButtonType> confirmation = confirmDialog.showAndWait();
             if (confirmation.isPresent() && confirmation.get() == ButtonType.OK) {
@@ -115,6 +115,25 @@ public class AlbumViewController {
         }
     }
 
+    public void openPhoto(Photo photo) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/PhotoView.fxml"));
+            Scene scene = new Scene(loader.load());
+            
+            PhotoViewController controller = loader.getController();
+            controller.setPhoto(photo);
+            controller.setParentController(this);
+            controller.displayPhoto();
+
+            // Display the scene
+            Stage stage = (Stage)photoContainer.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Photo32");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML
     private void handleBackToHome() {
         try {
@@ -136,13 +155,6 @@ public class AlbumViewController {
     // This method is called by PhotoCardController to remove a photo
     public void removePhoto(Photo photo) {
         album.getPhotos().remove(photo);
-        saveUser();
-    }
-
-    // This method would be used to save changes to tags or captions
-    public void updatePhoto(Photo photo) {
-        // Since we're working with references, we don't need to explicitly
-        // update the photo in the album - just save the user
         saveUser();
     }
 

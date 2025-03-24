@@ -20,4 +20,12 @@ public class User implements Serializable {
     public List<Album> getAlbums() {
         return albums;
     }
+
+
+    public Album getAlbumFromTitle(String title) {
+        for (Album album : this.getAlbums()) {
+            if (album.getTitle().equals(title)) return album;
+        }
+        return null;
+    }
 }

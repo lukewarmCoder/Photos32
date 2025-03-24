@@ -2,6 +2,9 @@ package photos32.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
 
+import photos32.model.Album;
 import photos32.model.Photo;
 
 public class PhotoCardController {
@@ -27,7 +31,6 @@ public class PhotoCardController {
     @FXML private ImageView thumbnail; 
     @FXML private MenuButton dropdownMenu;
     @FXML private Label caption;
-   
     // @FXML private Label dateTimeLabel;
 
     private Photo photo;
@@ -140,54 +143,108 @@ public class PhotoCardController {
 
     @FXML
     private void handleViewPhoto() {
-        // try {
-        //     FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/PhotoView.fxml"));
-        //     Scene scene = new Scene(loader.load());
-            
-        //     PhotoViewController controller = loader.getController();
-        //     controller.setPhoto(photo);
-        //     controller.setParentController(parentController);
-        //     controller.displayPhoto();
-            
-        //     Stage stage = new Stage();
-        //     stage.setScene(scene);
-        //     stage.setTitle("View Photo");
-        //     stage.setResizable(true);
-        //     stage.show();
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        //     showAlert(Alert.AlertType.ERROR, "Error", null, "Could not open photo viewer: " + e.getMessage());
-        // }
+        parentController.openPhoto(photo);
     }
 
     @FXML
     private void handleEditCaption() {
-        // // Dialog for editing caption
-        // TextInputDialog dialog = new TextInputDialog(photo.getCaption());
-        // dialog.setTitle("Edit Photo");
-        // dialog.setHeaderText("Edit photo caption");
-        // dialog.setContentText("Caption:");
+        // Dialog for editing caption
+        TextInputDialog dialog = new TextInputDialog(photo.getCaption());
+        dialog.setTitle("Edit Photo");
+        dialog.setHeaderText("Edit photo caption");
+        dialog.setContentText("Caption:");
         
-        // Optional<String> result = dialog.showAndWait();
-        // if (result.isPresent()) {
-        //     photo.setCaption(result.get().trim());
-        //     captionLabel.setText(photo.getCaption().isEmpty() ? "No caption" : photo.getCaption());
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            photo.setCaption(result.get().trim());
+            caption.setText(photo.getCaption().isEmpty() ? "No caption" : photo.getCaption());
             
-        //     // Save changes
-        //     parentController.saveUser();
-        // }
+            // Save changes
+            parentController.saveUser();
+        }
     }
 
     @FXML
     private void handlePhotoCopy() {
+        List<String> selectedAlbums = showAlbumSelectionDialog();
+        if (selectedAlbums.isEmpty()) return;
 
+        System.out.println("Copy to: " + selectedAlbums);
 
+        for (String albumTitle : selectedAlbums) {
+            Album destAlbum = parentController.getUser().getAlbumFromTitle(albumTitle);
+            if (destAlbum != null) {
+                destAlbum.getPhotos().add(photo);
+            }
+        }
+        parentController.saveUser();
     }
 
     @FXML
     private void handlePhotoMove() {
+        List<String> selectedAlbums = showAlbumSelectionDialog();
+        if (selectedAlbums.isEmpty()) return;
 
+        System.out.println("Move to: " + selectedAlbums);
+
+        for (String albumTitle : selectedAlbums) {
+            Album destAlbum = parentController.getUser().getAlbumFromTitle(albumTitle);
+            if (destAlbum != null) {
+                destAlbum.getPhotos().add(photo);
+            }
+        }
+        parentController.getAlbum().getPhotos().remove(photo);
+        parentController.saveUser();
+        parentController.populatePhotoTiles();
+
+        // If accessing this method from photo view, 
+        // if (inPhotoView) {
+        //     // go back 
+        // }
     }
+
+    private List<String> showAlbumSelectionDialog() {
+        Dialog<List<String>> dialog = createDialog();
+        Optional<List<String>> result = dialog.showAndWait();
+        return result.orElse(Collections.emptyList());
+    }
+
+    private Dialog<List<String>> createDialog() {
+        Dialog<List<String>> dialog = new Dialog<>();
+        dialog.setTitle("Select Destination Album(s)");
+    
+        ListView<String> albumListView = createAlbumListView();
+        dialog.getDialogPane().setContent(albumListView);
+    
+        dialog.getDialogPane().getButtonTypes().addAll(
+            new ButtonType("OK", ButtonBar.ButtonData.OK_DONE),
+            ButtonType.CANCEL
+        );
+    
+        dialog.setResultConverter(button -> {
+            if (button.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                return new ArrayList<>(albumListView.getSelectionModel().getSelectedItems());
+            }
+            return null;
+        });
+    
+        return dialog;
+    }
+
+    private ListView<String> createAlbumListView() {
+        ListView<String> listView = new ListView<>();
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    
+        for (Album album : parentController.getUser().getAlbums()) {
+            if (!album.getTitle().equals(parentController.getAlbum().getTitle())) {
+                listView.getItems().add(album.getTitle());
+            }
+        }
+    
+        return listView;
+    }
+
+
 
     @FXML
     private void handleDeletePhoto() {
