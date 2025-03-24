@@ -9,7 +9,7 @@ public class Photo implements Serializable {
     private String filepath;
     private String caption;
     private LocalDateTime dateTime;
-    private List<String> tags;
+    private List<Tag> tags;
     
     public Photo(String filepath) {
         this.filepath = filepath;
@@ -43,11 +43,11 @@ public class Photo implements Serializable {
         this.dateTime = dateTime;
     }
     
-    public List<String> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
     
-    public void addTag(String tag) {
+    public void addTag(Tag tag) {
         tags.add(tag);
     }
     

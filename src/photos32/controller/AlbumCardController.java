@@ -9,7 +9,7 @@ import javafx.scene.layout.VBox;
 
 import photos32.model.User;
 import photos32.model.Album;
-
+import photos32.model.Photo;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
 
@@ -19,7 +19,7 @@ import java.util.Optional;
 public class AlbumCardController {
     @FXML private VBox albumCard;
     @FXML private Label albumTitle;
-    @FXML private Label infoText;
+    @FXML private Label dateRangeLabel;
     @FXML private Label numOfPhotos;
     
     private Album album;
@@ -37,7 +37,35 @@ public class AlbumCardController {
         this.album = album;
         albumTitle.setText(album.getTitle());
         numOfPhotos.setText(String.valueOf(album.getPhotoCount()));
-    }
+
+        // Apply date range
+        if (album.getPhotoCount() > 0) {
+            String dateRange = "";
+
+            Photo earliestPhoto = album.getPhotos().get(0);
+            Photo latestPhoto = album.getPhotos().get(0);
+
+            for (Photo photo : album.getPhotos()) {
+                if (photo.getDateTime().isBefore(earliestPhoto.getDateTime())) {
+                    earliestPhoto = photo;
+                }
+                if (photo.getDateTime().isAfter(latestPhoto.getDateTime())) {
+                    latestPhoto = photo;
+                }
+            }
+
+            // Format the dates
+            String formattedStartDate = earliestPhoto.getDateTime().format(
+                java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy")
+            );
+            String formattedEndDate = latestPhoto.getDateTime().format(
+                java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy")
+            );
+
+            // Set the date range label
+            dateRangeLabel.setText(formattedStartDate + " - " + formattedEndDate);
+        }
+    }   
 
     @FXML
     public void initialize() {

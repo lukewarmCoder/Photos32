@@ -11,9 +11,9 @@ public class Photos extends Application {
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/photos32/view/Login.fxml"));
         stage.setScene(new Scene(root));
-        stage.setWidth(800);
+        stage.setWidth(825);
         stage.setHeight(600);
-        stage.setMinWidth(800);
+        stage.setMinWidth(825);
         stage.setMinHeight(600);
         stage.setTitle("Photo32 App - Login");
         stage.show();

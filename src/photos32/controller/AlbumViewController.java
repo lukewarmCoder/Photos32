@@ -121,8 +121,8 @@ public class AlbumViewController {
             Scene scene = new Scene(loader.load());
             
             PhotoViewController controller = loader.getController();
-            controller.setPhoto(photo);
             controller.setParentController(this);
+            controller.setPhoto(photo);
             controller.displayPhoto();
 
             // Display the scene

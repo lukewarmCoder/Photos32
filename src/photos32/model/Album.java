@@ -15,7 +15,7 @@ public class Album implements Serializable {
 
     public String getTitle() {
         return title;
-    }
+    } 
 
     public List<Photo> getPhotos() {
         return photos;
