@@ -10,11 +10,27 @@ Photos32/
 │── src/
 │   └── photos32/
 │       ├── model/
-│       │   └── Counter.java
+│       │   ├── Album.java
+│       │   ├── Photo.java
+│       │   ├── Tag.java
+│       │   ├── TagType.java
+│       │   └── User.java
 │       ├── view/
-│       │   └── CounterView.fxml
+│       │   ├── AdminHome.fxml
+│       │   ├── AlbumCard.fxml
+│       │   ├── AlbumView.fxml
+│       │   ├── Login.fxml
+│       │   ├── PhotoCard.fxml
+│       │   ├── PhotoView.fxml
+│       │   └── UserHome.fxml
 │       ├── controller/
-│       │   └── CounterController.java
+│       │   ├── AdminHomeController.java
+│       │   ├── AlbumCardController.java
+│       │   ├── AlbumViewController.java
+│       │   ├── LoginController.java
+│       │   ├── PhotoCardController.java
+│       │   ├── PhotoViewController.java
+│       │   └── UserHomeController.java
 │       └── Photos.java
 │── .gitignore
 |── README.md
