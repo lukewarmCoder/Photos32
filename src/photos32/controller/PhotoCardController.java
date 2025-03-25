@@ -1,24 +1,16 @@
 package photos32.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
 
@@ -244,8 +236,6 @@ public class PhotoCardController {
         return listView;
     }
 
-
-
     @FXML
     private void handleDeletePhoto() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -261,14 +251,6 @@ public class PhotoCardController {
             // Update UI (handled by AlbumViewController)
             parentController.populatePhotoTiles();
         }
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String header, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
     
 }

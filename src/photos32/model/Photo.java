@@ -47,12 +47,25 @@ public class Photo implements Serializable {
         return tags;
     }
     
-    public void addTag(Tag tag) {
-        tags.add(tag);
+    public void addTag(Tag newTag) {
+        // Check if the tag type allows multiple values
+        if (!newTag.getTagType().isAllowMultipleValues()) {
+            // Check if this tag type already exists for the photo
+            if (tags.stream().anyMatch(existingTag -> 
+                existingTag.getTagType().getName().equalsIgnoreCase(newTag.getTagType().getName()))) {
+                throw new IllegalArgumentException("This tag type does not allow multiple values.");
+            }
+        }
+        
+        // If validation passes, add the tag
+        tags.add(newTag);
     }
-    
-    public void removeTag(String tag) {
-        tags.remove(tag);
+
+    public boolean hasTag(String tagName, String tagValue) {
+        for (Tag tag : tags) {
+            if (tag.getName().equals(tagName) && tag.getValue().equals(tagValue)) return true;
+        }
+        return false;
     }
 
     @Override

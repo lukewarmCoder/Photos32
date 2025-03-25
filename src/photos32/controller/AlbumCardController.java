@@ -40,7 +40,6 @@ public class AlbumCardController {
 
         // Apply date range
         if (album.getPhotoCount() > 0) {
-            String dateRange = "";
 
             Photo earliestPhoto = album.getPhotos().get(0);
             Photo latestPhoto = album.getPhotos().get(0);

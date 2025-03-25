@@ -7,10 +7,16 @@ import java.util.List;
 public class User implements Serializable {
     String username;
     List<Album> albums;
+    List<TagType> tagTypes;
 
     public User(String username) {
         this.username = username;
         this.albums = new ArrayList<>();
+
+        this.tagTypes = new ArrayList<>();
+        tagTypes.add(new TagType("location", false));
+        tagTypes.add(new TagType("person", true));
+        tagTypes.add(new TagType("event", true));
     }
 
     public String getUsername() {
@@ -19,6 +25,10 @@ public class User implements Serializable {
 
     public List<Album> getAlbums() {
         return albums;
+    }
+
+    public List<TagType> getTagTypes() {
+        return tagTypes;
     }
 
 

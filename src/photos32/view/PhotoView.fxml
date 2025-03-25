@@ -92,7 +92,7 @@
                            </VBox.margin>
                         </Label>
                         <ListView fx:id="tagListView" prefHeight="217.0" prefWidth="115.0" style="-fx-border-width: 0;" />
-                        <Button mnemonicParsing="false" onAction="#handleCreateTag" text="Create tag" />
+                        <Button mnemonicParsing="false" onAction="#handleAddTag" text="Add tag" />
                         <Label prefHeight="36.0" prefWidth="142.0" wrapText="true" textAlignment="CENTER" text="*Right-click on a tag to delete it">
                            <font>
                               <Font size="10.0" />
