@@ -5,12 +5,9 @@ import java.time.LocalDate;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -22,6 +19,7 @@ import java.util.stream.Collectors;
 
 import photos32.model.Album;
 import photos32.model.Photo;
+import photos32.model.Tag;
 import photos32.model.User;
 
 public class UserHomeController {
@@ -163,11 +161,12 @@ public class UserHomeController {
         alert.setTitle("Help");
         alert.setHeaderText("How to Use Search");
         alert.setContentText("Enter a date range, tags, or captions to find photos.\n\n"
-                + "Examples:\n"
-                + "- Date: 01-01-2023 to 12-31-2023\n"
-                + "- Date Format: MM-dd-yyyy to MM-dd-yyyy"
-                + "- Single tag: person=John OR location=Paris\n"
-                + "- Tag: person=John AND location=Paris");
+                + "Search Formats:\n"
+                + "- Date Range: MM-dd-yyyy to MM-dd-yyyy\n" // 01-01-2023 to 12-31-2023
+                + "- Single Tag: person=John\n"
+                + "- Tag Conjuction: person=John AND location=Paris\n"
+                + "- Tag Disjunction: person=John OR location=Paris\n\n"
+                + "Queries not following the above formats will assume to be captions");
         alert.showAndWait();
     }
 
@@ -194,12 +193,12 @@ public class UserHomeController {
         // Check if query matches date range search
         if (isDateRangeSearch(query)) {
             System.out.println("isDate Search");
-            searchResults = searchByDateRange(query);
+            // searchResults = searchByDateRange(query);
         } 
         // Check if query matches tag-based search
         else if (isTagSearch(query)) {
             System.out.println("isTagSearch");
-            // searchResults = searchByTags(query);
+            searchResults = searchByTags(query);
         }
         // Fallback to filename/caption search
         else {
@@ -211,7 +210,6 @@ public class UserHomeController {
         if (searchResults.isEmpty()) {
             Label noResultsLabel = new Label("No photos found matching the search criteria.");
             noResultsLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: gray;");
-            albumContainer.getChildren().add(noResultsLabel);
             return;
         }
 
@@ -224,10 +222,96 @@ public class UserHomeController {
     }
 
     private boolean isTagSearch(String query) {
-        // Check for AND or OR queries with tag-value pairs
-        return query.contains(" AND ") || query.contains(" OR ") || 
-               query.matches("\\w+=[^\\s]+");
+        // Normalize query to avoid case sensitivity issues
+        query = query.trim().toLowerCase();
+
+        System.out.println("In isTagSearch: "+query);
+        System.out.println(query.contains("="));
+        System.out.println(!query.contains("and"));
+        System.out.println(!query.contains("or"));
+    
+        // Check for single tag case, e.g., person=John
+        if (query.contains("=") && !query.contains("and") && !query.contains("or")) {
+            System.out.println("why no?");
+            return true;
         }
+    
+        // Check for conjunction case, e.g., person=John AND location=Paris
+        if (query.contains("and")) {
+            String[] parts = query.split("and");
+            // Check if both sides contain a valid tag-value pair
+            return parts.length == 2 && parts[0].contains("=") && parts[1].contains("=");
+        }
+    
+        // Check for disjunction case, e.g., person=John OR location=Paris
+        if (query.contains("or")) {
+            String[] parts = query.split("or");
+            // Check if both sides contain a valid tag-value pair
+            return parts.length == 2 && parts[0].contains("=") && parts[1].contains("=");
+        }
+    
+        return false;
+    }
+
+    private List<Photo> searchByTags(String query) {
+        List<Photo> matchingPhotos = new ArrayList<>();
+
+        System.out.println("we in here?");
+    
+        // Single tag search
+        if (!query.contains(" AND ") && !query.contains(" OR ")) {
+            // String[] tagParts = query.split("=");
+            // String tagType = tagParts[0];
+            // String tagValue = tagParts[1];
+            
+    
+            for (Album album : user.getAlbums()) {
+                for (Photo photo : album.getPhotos()) {
+                    for (Tag tag : photo.getTags()) {
+                        System.out.println(tag.toString() + query);
+                        System.out.println(tag.toString().equals(query));
+                        System.out.println();
+                        if (tag.toString().equals(query)) matchingPhotos.add(photo);
+                    }
+                }
+            }
+        }
+        // Conjunctive AND search
+        else if (query.contains(" AND ")) {
+            String[] tagPairs = query.split(" AND ");
+            String[] tag1 = tagPairs[0].split("=");
+            String[] tag2 = tagPairs[1].split("=");
+    
+            for (Album album : user.getAlbums()) {
+                matchingPhotos.addAll(
+                    album.getPhotos().stream()
+                        .filter(photo -> 
+                            photo.hasTag(tag1[0], tag1[1]) && 
+                            photo.hasTag(tag2[0], tag2[1]))
+                        .collect(Collectors.toList())
+                );
+            }
+        }
+        // Disjunctive OR search
+        else if (query.contains(" OR ")) {
+            String[] tagPairs = query.split(" OR ");
+            String[] tag1 = tagPairs[0].split("=");
+            String[] tag2 = tagPairs[1].split("=");
+    
+            for (Album album : user.getAlbums()) {
+                matchingPhotos.addAll(
+                    album.getPhotos().stream()
+                        .filter(photo -> 
+                            photo.hasTag(tag1[0], tag1[1]) || 
+                            photo.hasTag(tag2[0], tag2[1]))
+                        .collect(Collectors.toList())
+                );
+            }
+        }
+    
+        return matchingPhotos;
+    }
+
 
     private List<Photo> searchByDateRange(String query) {
         try {
@@ -271,58 +355,7 @@ public class UserHomeController {
     //     return matchingPhotos;
     // }
 
-    // private List<Photo> searchByTags(String query) {
-    //     List<Photo> matchingPhotos = new ArrayList<>();
     
-    //     // Single tag search
-    //     if (!query.contains(" AND ") && !query.contains(" OR ")) {
-    //         String[] tagParts = query.split("=");
-    //         String tagType = tagParts[0];
-    //         String tagValue = tagParts[1];
-    
-    //         for (Album album : user.getAlbums()) {
-    //             matchingPhotos.addAll(
-    //                 album.getPhotos().stream()
-    //                     .filter(photo -> photo.hasTag(tagType, tagValue))
-    //                     .collect(Collectors.toList())
-    //             );
-    //         }
-    //     }
-    //     // Conjunctive AND search
-    //     else if (query.contains(" AND ")) {
-    //         String[] tagPairs = query.split(" AND ");
-    //         String[] tag1 = tagPairs[0].split("=");
-    //         String[] tag2 = tagPairs[1].split("=");
-    
-    //         for (Album album : user.getAlbums()) {
-    //             matchingPhotos.addAll(
-    //                 album.getPhotos().stream()
-    //                     .filter(photo -> 
-    //                         photo.hasTag(tag1[0], tag1[1]) && 
-    //                         photo.hasTag(tag2[0], tag2[1]))
-    //                     .collect(Collectors.toList())
-    //             );
-    //         }
-    //     }
-    //     // Disjunctive OR search
-    //     else if (query.contains(" OR ")) {
-    //         String[] tagPairs = query.split(" OR ");
-    //         String[] tag1 = tagPairs[0].split("=");
-    //         String[] tag2 = tagPairs[1].split("=");
-    
-    //         for (Album album : user.getAlbums()) {
-    //             matchingPhotos.addAll(
-    //                 album.getPhotos().stream()
-    //                     .filter(photo -> 
-    //                         photo.hasTag(tag1[0], tag1[1]) || 
-    //                         photo.hasTag(tag2[0], tag2[1]))
-    //                     .collect(Collectors.toList())
-    //             );
-    //         }
-    //     }
-    
-    //     return matchingPhotos;
-    // }
 
     // private void displaySearchResults(List<Photo> photos) {
     //     Button createAlbumFromResults = new Button("Create Album from Search Results");

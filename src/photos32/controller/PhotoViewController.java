@@ -7,10 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -19,7 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import javafx.util.Pair;
+
 import photos32.model.Album;
 import photos32.model.Photo;
 import photos32.model.Tag;
@@ -448,78 +446,6 @@ public class PhotoViewController {
             }
         });
     }
-
-    
-
-    // @FXML
-    // private void handleAddTag() {
-    //     Dialog<Pair<String, String>> dialog = new Dialog<>();
-    //     dialog.setTitle("Create new tag");
-    //     dialog.setHeaderText("Enter tag name and value:");
-
-    //     // Add OK and Cancel buttons
-    //     ButtonType createButtonType = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
-    //     dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
-
-    //     // Create the tag name and value fields
-    //     GridPane grid = new GridPane();
-    //     grid.setHgap(10);
-    //     grid.setVgap(10);
-    //     grid.setPadding(new Insets(20, 150, 10, 10));
-
-    //     TextField tagNameField = new TextField();
-    //     tagNameField.setPromptText("Tag name");
-
-    //     TextField tagValueField = new TextField();
-    //     tagValueField.setPromptText("Tag value");
-
-    //     grid.add(new Label("Name:"), 0, 0);
-    //     grid.add(tagNameField, 1, 0);
-    //     grid.add(new Label("Value:"), 0, 1);
-    //     grid.add(tagValueField, 1, 1);
-
-    //     dialog.getDialogPane().setContent(grid);
-
-    //     // Enable/Disable Create button based on input
-    //     Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
-    //     createButton.setDisable(true);
-
-    //     // Disable create button until BOTH fields are filled
-    //     ChangeListener<String> listener = (obs, oldVal, newVal) -> {
-    //         boolean disable = tagNameField.getText().trim().isEmpty() || tagValueField.getText().trim().isEmpty();
-    //         createButton.setDisable(disable);
-    //     };
-
-    //     tagNameField.textProperty().addListener(listener);
-    //     tagValueField.textProperty().addListener(listener);
-
-    //     // Convert result to a pair of (name, value)
-    //     dialog.setResultConverter(dialogButton -> {
-    //         if (dialogButton == createButtonType) {
-    //             return new Pair<>(tagNameField.getText().trim(), tagValueField.getText().trim());
-    //         }
-    //         return null;
-    //     });
-
-    //     Optional<Pair<String, String>> result = dialog.showAndWait();
-
-    //     if (result.isPresent()) {
-    //         String tagName = result.get().getKey();
-    //         String tagValue = result.get().getValue();
-
-    //         Tag newTag = new Tag(tagName, tagValue);
-
-    //         if (photo.getTags().contains(newTag)) {
-    //             showAlert(Alert.AlertType.INFORMATION, "Information", "Error: Duplicate Tag", 
-    //                     "Tag already exists");
-    //             return;
-    //         }
-
-    //         photo.addTag(newTag);
-    //         updateTagListView();
-    //         parentController.saveUser();
-    //     }
-    // }
 
     private void removeTag(Tag tag) {
         if (photo != null) {
