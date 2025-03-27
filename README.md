@@ -1,5 +1,5 @@
 # Photos32
-A single-user photo application that allows storage and management of photos.
+A multi-user photo application that allows storage and management of photos.
 
 ## Project Structure
 ```
