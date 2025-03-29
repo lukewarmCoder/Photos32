@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import photos32.model.TagType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,16 +33,19 @@ public class FilterPopUp {
     private LocalDate endDate;
     private boolean filterApplied = false;
     
-    // Replace with your actual tag names
-    private List<String> availableTagNames = new ArrayList<>(List.of("Location", "Person", "Event"));
+    private List<String> availableTagNames = new ArrayList<>();
     
-    public FilterPopUp(Window owner) {
+    public FilterPopUp(Window owner, List<TagType> tags) {
         stage = new Stage();
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(owner);
         stage.setTitle("Filter Photos");
-        stage.setMinWidth(400);
+        stage.setMinWidth(600);
         stage.setMinHeight(400);
+
+        for (TagType tagType : tags) {
+            availableTagNames.add(tagType.getName());
+        }
         
         createUI();
     }
@@ -134,6 +138,7 @@ public class FilterPopUp {
         removeButton.setOnAction(e -> tagContainer.getChildren().remove(tagRow));
         
         tagRow.getChildren().addAll(tagNameComboBox, tagValueField, addValueButton, removeButton);
+        // tagRow.getChildren().addAll(tagNameComboBox, tagValueField, removeButton);
         tagContainer.getChildren().add(tagRow);
     }
     

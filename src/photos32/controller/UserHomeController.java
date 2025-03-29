@@ -5,6 +5,8 @@ import java.time.LocalDate;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
@@ -25,13 +27,12 @@ public class UserHomeController {
     @FXML private Label userHomeHeader;
     @FXML private TextField searchField;
     @FXML private Button signOutButton;
-    @FXML private Button helpButton;
+    @FXML private Button searchButton;
 
     private User user;
     private FilterPopUp filterPopup;
     private Button filterButton;
     private Button resetFilterButton;
-    private HBox searchHBox;
 
     public void setHeader(User user) {
         userHomeHeader.setText("Welcome, " + user.getUsername());
@@ -45,6 +46,26 @@ public class UserHomeController {
     public User getUser() {
         return user;
     } 
+
+    @FXML
+    public void initialize() {
+        // Find the HBox containing the search elements
+        HBox searchHBox = (HBox)searchField.getParent();
+        
+        // Create the filter button
+        filterButton = new Button("Filter");
+        filterButton.setOnAction(event -> showFilterPopup());
+        
+        // Create the reset filter button (initially not visible)
+        resetFilterButton = new Button("Reset Filter");
+        resetFilterButton.setVisible(false);
+        resetFilterButton.setOnAction(event -> resetFilter());
+
+        // Add buttons to the search HBox
+        searchHBox.getChildren().add(2, filterButton);
+        searchHBox.getChildren().add(3, resetFilterButton);
+        HBox.setMargin(resetFilterButton, new Insets(0, 0, 0, 5));
+    }
 
     // Append the album cards for each user to the album container in UserHome.fxml
     public void populateAlbumTiles() {
@@ -66,25 +87,6 @@ public class UserHomeController {
                 e.printStackTrace();
             }
         }
-    }
-
-    @FXML
-    public void initialize() {
-        // Find the HBox containing the search elements
-        searchHBox = (HBox) searchField.getParent();
-        
-        // Create the filter button
-        filterButton = new Button("Filter");
-        filterButton.setOnAction(event -> showFilterPopup());
-        
-        // Create the reset filter button (initially not visible)
-        resetFilterButton = new Button("Reset Filter");
-        resetFilterButton.setVisible(false);
-        resetFilterButton.setOnAction(event -> resetFilter());
-        
-        // Add buttons to the search HBox
-        searchHBox.getChildren().add(searchHBox.getChildren().indexOf(helpButton), filterButton);
-        searchHBox.getChildren().add(searchHBox.getChildren().indexOf(helpButton), resetFilterButton);
     }
     
     @FXML
@@ -218,7 +220,7 @@ public class UserHomeController {
 
     private void showFilterPopup() {
         if (filterPopup == null) {
-            filterPopup = new FilterPopUp(searchField.getScene().getWindow());
+            filterPopup = new FilterPopUp(searchField.getScene().getWindow(), user.getTagTypes());
         }
         
         filterPopup.show();
