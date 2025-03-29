@@ -1,7 +1,10 @@
 package photos32.model;
 
+import java.io.File;
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +17,7 @@ public class Photo implements Serializable {
     public Photo(String filepath) {
         this.filepath = filepath;
         this.caption = "";
-        this.dateTime = LocalDateTime.now();
+        this.dateTime = getFileLastModifiedTime(filepath);
         this.tags = new ArrayList<>();
     }
 
@@ -45,6 +48,21 @@ public class Photo implements Serializable {
     
     public List<Tag> getTags() {
         return tags;
+    }
+
+    private LocalDateTime getFileLastModifiedTime(String filepath) {
+        try {
+            File file = new File(filepath);
+            if (!file.exists()) return LocalDateTime.now(); // Fallback if file doesn't exist
+            
+            // Convert file's last modified time to LocalDateTime
+            return Instant.ofEpochMilli(file.lastModified())
+                          .atZone(ZoneId.systemDefault())
+                          .toLocalDateTime();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return LocalDateTime.now(); // Fallback in case of an error
+        }
     }
     
     public void addTag(Tag newTag) {

@@ -23,7 +23,6 @@ public class PhotoCardController {
     @FXML private ImageView thumbnail; 
     @FXML private MenuButton dropdownMenu;
     @FXML private Label caption;
-    // @FXML private Label dateTimeLabel;
 
     private Photo photo;
     private AlbumViewController parentController;
@@ -116,15 +115,6 @@ public class PhotoCardController {
         } else {
             caption.setText("No caption");
         }
-        
-        // Set the date/time
-        // if (photo.getDateTime() != null) {
-        //     // Format as MM/dd/yyyy HH:mm
-        //     String formattedDate = photo.getDateTime().format(java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm"));
-        //     dateTimeLabel.setText(formattedDate);
-        // } else {
-        //     dateTimeLabel.setText("No date available");
-        // }
     }
 
 
@@ -161,7 +151,19 @@ public class PhotoCardController {
         List<String> selectedAlbums = showAlbumSelectionDialog();
         if (selectedAlbums.isEmpty()) return;
 
-        System.out.println("Copy to: " + selectedAlbums);
+        // Make sure none of the selected albums already have the current photo in it.
+        for (String albumTitle : selectedAlbums) {
+            for (Photo existingPhoto : parentController.getUser().getAlbumFromTitle(albumTitle).getPhotos()) {
+                if (existingPhoto.getFilepath().equals(photo.getFilepath())) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error: Invalid copy");
+                    alert.setHeaderText("Duplicate photo");
+                    alert.setContentText("This photo already exists in the following album: '" + albumTitle + "'");
+                    alert.showAndWait();
+                    return;
+                }
+            }
+        }
 
         for (String albumTitle : selectedAlbums) {
             Album destAlbum = parentController.getUser().getAlbumFromTitle(albumTitle);
@@ -177,7 +179,19 @@ public class PhotoCardController {
         List<String> selectedAlbums = showAlbumSelectionDialog();
         if (selectedAlbums.isEmpty()) return;
 
-        System.out.println("Move to: " + selectedAlbums);
+        // Make sure none of the selected albums already have the current photo in it.
+        for (String albumTitle : selectedAlbums) {
+            for (Photo existingPhoto : parentController.getUser().getAlbumFromTitle(albumTitle).getPhotos()) {
+                if (existingPhoto.getFilepath().equals(photo.getFilepath())) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error: Invalid move");
+                    alert.setHeaderText("Duplicate photo");
+                    alert.setContentText("This photo already exists in the following album: '" + albumTitle + "'");
+                    alert.showAndWait();
+                    return;
+                }
+            }
+        }
 
         for (String albumTitle : selectedAlbums) {
             Album destAlbum = parentController.getUser().getAlbumFromTitle(albumTitle);
@@ -188,11 +202,6 @@ public class PhotoCardController {
         parentController.getAlbum().getPhotos().remove(photo);
         parentController.saveUser();
         parentController.populatePhotoTiles();
-
-        // If accessing this method from photo view, 
-        // if (inPhotoView) {
-        //     // go back 
-        // }
     }
 
     private List<String> showAlbumSelectionDialog() {

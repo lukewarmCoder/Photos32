@@ -85,6 +85,43 @@ public class AlbumViewController {
 
             Optional<ButtonType> confirmation = confirmDialog.showAndWait();
             if (confirmation.isPresent() && confirmation.get() == ButtonType.OK) {
+
+                // Check if a photo with the same filepath already exists in the current album...
+                for (Photo photo : album.getPhotos()) {
+                    if (photo.getFilepath().equals(selectedFile.getAbsolutePath())) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Error");
+                        alert.setHeaderText("Duplicate photo");
+                        alert.setContentText("The photo you selected already exists in this album.");
+                        alert.showAndWait();
+                        return;
+                    }
+                }
+
+                // Check if a photo with the same filepath already exists in another album...
+                // If so, then copy it to this album.
+                for (Album a : user.getAlbums()) {
+                    for (Photo photo : a.getPhotos()) {
+                        if (photo.getFilepath().equals(selectedFile.getAbsolutePath())) {
+                            Alert duplicatePhotoAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                            showAlert(duplicatePhotoAlert, "Duplicate Photo Alert", "", 
+                                "The photo you selected already exists in the following album: '" + a.getTitle() + 
+                                "'. Proceeding will copy all photo data from that album to the current album.");
+
+                            Optional<ButtonType> confirmOptional = duplicatePhotoAlert.showAndWait();
+                            if (confirmOptional.isPresent() && confirmOptional.get() == ButtonType.OK) {
+                                album.getPhotos().add(photo);
+                                // Save changes
+                                saveUser();
+                                populatePhotoTiles();
+                                return;
+                            } else {
+                                return;
+                            }
+                        }
+                    }
+                }
+
                 // Create new photo object
                 Photo newPhoto = new Photo(selectedFile.getAbsolutePath());
                 

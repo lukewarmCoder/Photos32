@@ -8,18 +8,15 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import photos32.model.Album;
-import photos32.model.Photo;
-import photos32.model.Tag;
 import photos32.model.User;
 
 public class UserHomeController {
@@ -28,8 +25,13 @@ public class UserHomeController {
     @FXML private Label userHomeHeader;
     @FXML private TextField searchField;
     @FXML private Button signOutButton;
+    @FXML private Button helpButton;
 
     private User user;
+    private FilterPopUp filterPopup;
+    private Button filterButton;
+    private Button resetFilterButton;
+    private HBox searchHBox;
 
     public void setHeader(User user) {
         userHomeHeader.setText("Welcome, " + user.getUsername());
@@ -64,6 +66,25 @@ public class UserHomeController {
                 e.printStackTrace();
             }
         }
+    }
+
+    @FXML
+    public void initialize() {
+        // Find the HBox containing the search elements
+        searchHBox = (HBox) searchField.getParent();
+        
+        // Create the filter button
+        filterButton = new Button("Filter");
+        filterButton.setOnAction(event -> showFilterPopup());
+        
+        // Create the reset filter button (initially not visible)
+        resetFilterButton = new Button("Reset Filter");
+        resetFilterButton.setVisible(false);
+        resetFilterButton.setOnAction(event -> resetFilter());
+        
+        // Add buttons to the search HBox
+        searchHBox.getChildren().add(searchHBox.getChildren().indexOf(helpButton), filterButton);
+        searchHBox.getChildren().add(searchHBox.getChildren().indexOf(helpButton), resetFilterButton);
     }
     
     @FXML
@@ -173,256 +194,55 @@ public class UserHomeController {
     @FXML
     private void handleSearch() {
         String query = searchField.getText().trim();
-        System.out.println(query);
 
-        if (query.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            showAlert(alert, "Information", "Empty Search", "Please enter a search term.");
-            alert.showAndWait();
-            return;
+        // Check if filter is applied
+        if (filterPopup != null && filterPopup.isFilterApplied()) {
+            Map<String, List<String>> tags = filterPopup.getSelectedTags();
+            LocalDate startDate = filterPopup.getStartDate();
+            LocalDate endDate = filterPopup.getEndDate();
+            
+            // Log filter parameters for debugging
+            System.out.println("Search query: " + query);
+            System.out.println("Filtering by tags: " + tags);
+            System.out.println("Date range: " + startDate + " to " + endDate);
+            
+            // Implement search logic with filters and with/without a query here
+            // searchPhotosWithFilters(query, tags, startDate, endDate);
+        } else {
+            // Regular search without filters
+            System.out.println("Search query: " + query);
+            // searchPhotos(query);
         }
-        searchPhotos(query);
+        
+    }
+
+    private void showFilterPopup() {
+        if (filterPopup == null) {
+            filterPopup = new FilterPopUp(searchField.getScene().getWindow());
+        }
+        
+        filterPopup.show();
+        
+        // If filters were applied, show the reset button
+        if (filterPopup.isFilterApplied()) {
+            resetFilterButton.setVisible(true);
+        }
+    }
+    
+    private void resetFilter() {
+        if (filterPopup != null) {
+            filterPopup.clearFilters();
+            resetFilterButton.setVisible(false);
+        }
     }
 
 
     private void searchPhotos(String query) {
 
-        // List to store matching photos
-        List<Photo> searchResults = new ArrayList<>();
 
-        // Check if query matches date range search
-        if (isDateRangeSearch(query)) {
-            System.out.println("isDate Search");
-            // searchResults = searchByDateRange(query);
-        } 
-        // Check if query matches tag-based search
-        else if (isTagSearch(query)) {
-            System.out.println("isTagSearch");
-            searchResults = searchByTags(query);
-        }
-        // Fallback to filename/caption search
-        else {
-            // searchResults = searchByNameOrCaption(query);
-            System.out.println("is caption search");
-        }
-
-        // If no results found
-        if (searchResults.isEmpty()) {
-            Label noResultsLabel = new Label("No photos found matching the search criteria.");
-            noResultsLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: gray;");
-            return;
-        }
-
-        // Display results similar to album view
-        // displaySearchResults(searchResults);
     }
 
-    private boolean isDateRangeSearch(String query) {
-        return query.matches("\\d{2}-\\d{2}-\\d{4} to \\d{2}-\\d{2}-\\d{4}");
-    }
-
-    private boolean isTagSearch(String query) {
-        // Normalize query to avoid case sensitivity issues
-        query = query.trim().toLowerCase();
-
-        System.out.println("In isTagSearch: "+query);
-        System.out.println(query.contains("="));
-        System.out.println(!query.contains("and"));
-        System.out.println(!query.contains("or"));
-    
-        // Check for single tag case, e.g., person=John
-        if (query.contains("=") && !query.contains("and") && !query.contains("or")) {
-            System.out.println("why no?");
-            return true;
-        }
-    
-        // Check for conjunction case, e.g., person=John AND location=Paris
-        if (query.contains("and")) {
-            String[] parts = query.split("and");
-            // Check if both sides contain a valid tag-value pair
-            return parts.length == 2 && parts[0].contains("=") && parts[1].contains("=");
-        }
-    
-        // Check for disjunction case, e.g., person=John OR location=Paris
-        if (query.contains("or")) {
-            String[] parts = query.split("or");
-            // Check if both sides contain a valid tag-value pair
-            return parts.length == 2 && parts[0].contains("=") && parts[1].contains("=");
-        }
-    
-        return false;
-    }
-
-    private List<Photo> searchByTags(String query) {
-        List<Photo> matchingPhotos = new ArrayList<>();
-
-        System.out.println("we in here?");
-    
-        // Single tag search
-        if (!query.contains(" AND ") && !query.contains(" OR ")) {
-            // String[] tagParts = query.split("=");
-            // String tagType = tagParts[0];
-            // String tagValue = tagParts[1];
-            
-    
-            for (Album album : user.getAlbums()) {
-                for (Photo photo : album.getPhotos()) {
-                    for (Tag tag : photo.getTags()) {
-                        System.out.println(tag.toString() + query);
-                        System.out.println(tag.toString().equals(query));
-                        System.out.println();
-                        if (tag.toString().equals(query)) matchingPhotos.add(photo);
-                    }
-                }
-            }
-        }
-        // Conjunctive AND search
-        else if (query.contains(" AND ")) {
-            String[] tagPairs = query.split(" AND ");
-            String[] tag1 = tagPairs[0].split("=");
-            String[] tag2 = tagPairs[1].split("=");
-    
-            for (Album album : user.getAlbums()) {
-                matchingPhotos.addAll(
-                    album.getPhotos().stream()
-                        .filter(photo -> 
-                            photo.hasTag(tag1[0], tag1[1]) && 
-                            photo.hasTag(tag2[0], tag2[1]))
-                        .collect(Collectors.toList())
-                );
-            }
-        }
-        // Disjunctive OR search
-        else if (query.contains(" OR ")) {
-            String[] tagPairs = query.split(" OR ");
-            String[] tag1 = tagPairs[0].split("=");
-            String[] tag2 = tagPairs[1].split("=");
-    
-            for (Album album : user.getAlbums()) {
-                matchingPhotos.addAll(
-                    album.getPhotos().stream()
-                        .filter(photo -> 
-                            photo.hasTag(tag1[0], tag1[1]) || 
-                            photo.hasTag(tag2[0], tag2[1]))
-                        .collect(Collectors.toList())
-                );
-            }
-        }
-    
-        return matchingPhotos;
-    }
-
-
-    private List<Photo> searchByDateRange(String query) {
-        try {
-            String[] parts = query.split(" to ");
-            LocalDate startDate = LocalDate.parse(parts[0].replace("from ", ""));
-            LocalDate endDate = LocalDate.parse(parts[1]);
-
-            List<Photo> matchingPhotos = new ArrayList<>();
-            for (Album album : user.getAlbums()) {
-                matchingPhotos.addAll(
-                    album.getPhotos().stream()
-                        .filter(photo -> {
-                            LocalDate photoDate = photo.getDateTime().toLocalDate();
-                            return !photoDate.isBefore(startDate) && !photoDate.isAfter(endDate);
-                        })
-                        .collect(Collectors.toList())
-                );
-            }
-            return matchingPhotos;
-        } catch (Exception e) {
-            showAlert(new Alert(Alert.AlertType.ERROR), 
-                "Search Error", 
-                "Invalid Date Format", 
-                "Please use format: from YYYY-MM-DD to YYYY-MM-DD"
-            );
-            return Collections.emptyList();
-        }
-    }
-
-    // private List<Photo> searchByNameOrCaption(String query) {
-    //     List<Photo> matchingPhotos = new ArrayList<>();
-    //     for (Album album : user.getAlbums()) {
-    //         matchingPhotos.addAll(
-    //             album.getPhotos().stream()
-    //                 .filter(photo -> 
-    //                     photo.getCaption().toLowerCase().contains(query.toLowerCase()) ||
-    //                     photo.getFilepath().toLowerCase().contains(query.toLowerCase()))
-    //                 .collect(Collectors.toList())
-    //         );
-    //     }
-    //     return matchingPhotos;
-    // }
-
-    
-
-    // private void displaySearchResults(List<Photo> photos) {
-    //     Button createAlbumFromResults = new Button("Create Album from Search Results");
-    //     createAlbumFromResults.setOnAction(e -> createAlbumFromSearchResults(photos));
-    //     albumContainer.getChildren().add(createAlbumFromResults);
-    
-    //     for (Photo photo : photos) {
-    //         try {
-    //             FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/PhotoCard.fxml"));
-    //             VBox photoCard = loader.load();
-    
-    //             PhotoCardController photoCardController = loader.getController();
-    //             photoCardController.setPhoto(photo);
-                
-    //             albumContainer.getChildren().add(photoCard);
-    //         } catch (IOException e) {
-    //             e.printStackTrace();
-    //         }
-    //     }
-    // }
-
-    // private void createAlbumFromSearchResults(List<Photo> searchResults) {
-    //     // Reuse album creation dialog logic
-    //     boolean validInput = false;
-    //     String title = null;
-        
-    //     while (!validInput) {
-    //         TextInputDialog dialog = new TextInputDialog();
-    //         dialog.setTitle("Create Album from Search Results");
-    //         dialog.setHeaderText("Enter a name for the new album:");
-    //         dialog.setContentText("Album Title:");
-            
-    //         Optional<String> result = dialog.showAndWait();
-            
-    //         if (!result.isPresent()) {
-    //             return; // Exit if user cancels
-    //         }
-            
-    //         title = result.get().trim();
-            
-    //         if (title.isEmpty()) {
-    //             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    //             showAlert(alert, "Information", "Error: Invalid Album Name", 
-    //                     "Album names cannot be empty!");
-    //             alert.showAndWait();
-    //             continue;
-    //         }
-            
-    //         if (isDuplicateAlbum(user, title)) {
-    //             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    //             showAlert(alert, "Information", "Error: Duplicate Album", 
-    //                     "An album with that name already exists!");
-    //             alert.showAndWait();
-    //             continue;
-    //         }
-            
-    //         validInput = true;
-    //     }
-        
-    //     // Create new album and add search results
-    //     Album newAlbum = new Album(title);
-    //     newAlbum.getPhotos().addAll(searchResults);
-    //     user.getAlbums().add(newAlbum);
-        
-    //     saveUser();
-    //     populateAlbumTiles();
-    // }
+   
 
 
 

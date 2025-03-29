@@ -16,7 +16,7 @@ public class User implements Serializable {
         this.tagTypes = new ArrayList<>();
         tagTypes.add(new TagType("location", false));
         tagTypes.add(new TagType("person", true));
-        tagTypes.add(new TagType("event", true));
+        tagTypes.add(new TagType("event", false));
     }
 
     public String getUsername() {
