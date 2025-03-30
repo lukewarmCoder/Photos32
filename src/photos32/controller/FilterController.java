@@ -1,0 +1,263 @@
+package photos32.controller;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FilterController {
+
+    @FXML private ComboBox<String> tagName1;
+    @FXML private TextField tagValue1;
+    @FXML private ComboBox<String> logicalOperator;
+    @FXML private ComboBox<String> tagName2;
+    @FXML private TextField tagValue2;
+    @FXML private VBox additionalTagContainer;
+    @FXML private DatePicker startDate;
+    @FXML private DatePicker endDate;
+    @FXML private Button applyButton;
+    @FXML private Button cancelButton;
+
+    private UserHomeController parentController;
+    private List<String> availableTagNames = new ArrayList<>();
+    private Stage stage;
+    private FilterCriteria existingCriteria;
+
+    /**
+     * Initialize the controller
+     */
+    @FXML
+    public void initialize() {
+        // Setup logical operator dropdown
+        logicalOperator.setItems(FXCollections.observableArrayList("AND", "OR"));
+        
+        // Show/hide second tag section based on operator selection
+        logicalOperator.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty()) {
+                additionalTagContainer.setManaged(true);
+                additionalTagContainer.setVisible(true);
+            } else {
+                additionalTagContainer.setManaged(false);
+                additionalTagContainer.setVisible(false);
+            }
+        });
+        
+        // Button handlers
+        cancelButton.setOnAction(e -> stage.close());
+        applyButton.setOnAction(e -> applyFilters());
+    }
+
+    /**
+     * Set up the controller with reference to parent and available tag names
+     */
+    public void setup(UserHomeController parentController, List<String> tagNames, Stage stage, FilterCriteria existingCriteria) {
+        this.parentController = parentController;
+        this.availableTagNames = tagNames;
+        this.stage = stage;
+        this.existingCriteria = existingCriteria;
+        
+        // Populate tag name dropdowns
+        ObservableList<String> tagNameOptions = FXCollections.observableArrayList(tagNames);
+        tagName1.setItems(tagNameOptions);
+        tagName2.setItems(tagNameOptions);
+        
+        // Add focus listeners AFTER fields are fully initialized
+        setupFocusListeners();
+        
+        // Load existing filter criteria if available
+        if (existingCriteria != null) {
+            loadExistingCriteria();
+        }
+    }
+
+    /**
+     * Load existing filter criteria into UI controls
+     */
+    private void loadExistingCriteria() {
+        if (existingCriteria.getTagFilters() != null && !existingCriteria.getTagFilters().isEmpty()) {
+            // First tag filter
+            if (existingCriteria.getTagFilters().size() >= 1) {
+                TagFilter firstFilter = existingCriteria.getTagFilters().get(0);
+                tagName1.setValue(firstFilter.getName());
+                tagValue1.setText(firstFilter.getValue());
+            }
+            
+            // Second tag filter if exists
+            if (existingCriteria.getTagFilters().size() >= 2) {
+                logicalOperator.setValue(existingCriteria.getLogicalOperator());
+                TagFilter secondFilter = existingCriteria.getTagFilters().get(1);
+                tagName2.setValue(secondFilter.getName());
+                tagValue2.setText(secondFilter.getValue());
+                
+                // Make sure second tag container is visible
+                additionalTagContainer.setManaged(true);
+                additionalTagContainer.setVisible(true);
+            }
+        }
+        
+        // Date filters
+        if (existingCriteria.getStartDate() != null) {
+            startDate.setValue(existingCriteria.getStartDate());
+        }
+        
+        if (existingCriteria.getEndDate() != null) {
+            endDate.setValue(existingCriteria.getEndDate());
+        }
+    }
+
+    /**
+     * Handle when user presses Enter in tag value field
+     */
+    @FXML
+    public void onTagValueEntered() {
+        // Process the tag value when Enter is pressed
+        if (tagValue1.isFocused()) {
+            processTagValue(tagValue1);
+        } else if (tagValue2.isFocused()) {
+            processTagValue(tagValue2);
+        }
+    }
+
+    /**
+     * Process tag value (trim, validate, etc.)
+     */
+    private void processTagValue(TextField tagValueField) {
+        if (tagValueField.getText() != null && !tagValueField.getText().isEmpty()) {
+            tagValueField.setText(tagValueField.getText().trim());
+        }
+    }
+
+    /**
+     * Setup focus listeners for tag value fields to commit when focus is lost
+     */
+    private void setupFocusListeners() {
+        // Focus listener for first tag value field
+        tagValue1.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (Boolean.FALSE.equals(newValue)) { // Focus lost
+                processTagValue(tagValue1);
+                System.out.println("Focus lost on tagValue1: " + tagValue1.getText());
+            }
+        });
+
+        // Focus listener for second tag value field
+        tagValue2.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (Boolean.FALSE.equals(newValue)) { // Focus lost
+                processTagValue(tagValue2);
+                System.out.println("Focus lost on tagValue2: " + tagValue2.getText());
+            }
+        });
+    }
+
+    /**
+     * Apply the filter criteria and close the window
+     */
+    private void applyFilters() {
+        // Collect filter criteria
+        FilterCriteria criteria = new FilterCriteria();
+        
+        // Tag filters
+        if (tagName1.getValue() != null && !tagValue1.getText().isEmpty()) {
+            criteria.addTagFilter(tagName1.getValue(), tagValue1.getText());
+            
+            // If second tag filter is visible and has values
+            if (additionalTagContainer.isVisible() && 
+                tagName2.getValue() != null && 
+                !tagValue2.getText().isEmpty()) {
+                
+                criteria.setLogicalOperator(logicalOperator.getValue());
+                criteria.addTagFilter(tagName2.getValue(), tagValue2.getText());
+            }
+        }
+        
+        // Date filters
+        if (startDate.getValue() != null) {
+            criteria.setStartDate(startDate.getValue());
+        }
+        
+        if (endDate.getValue() != null) {
+            criteria.setEndDate(endDate.getValue());
+        }
+        
+        // Pass filter criteria to parent controller
+        parentController.applyFilterCriteria(criteria);
+        
+        // Close the window
+        stage.close();
+    }
+
+    /**
+     * Inner class to hold filter criteria
+     */
+    public static class FilterCriteria {
+        private List<TagFilter> tagFilters = new ArrayList<>();
+        private String logicalOperator;
+        private LocalDate startDate;
+        private LocalDate endDate;
+
+        public void addTagFilter(String name, String value) {
+            tagFilters.add(new TagFilter(name, value));
+        }
+
+        public List<TagFilter> getTagFilters() {
+            return tagFilters;
+        }
+
+        public String getLogicalOperator() {
+            return logicalOperator;
+        }
+
+        public void setLogicalOperator(String logicalOperator) {
+            this.logicalOperator = logicalOperator;
+        }
+
+        public LocalDate getStartDate() {
+            return startDate;
+        }
+
+        public void setStartDate(LocalDate startDate) {
+            this.startDate = startDate;
+        }
+
+        public LocalDate getEndDate() {
+            return endDate;
+        }
+
+        public void setEndDate(LocalDate endDate) {
+            this.endDate = endDate;
+        }
+
+        public boolean hasFilters() {
+            return !tagFilters.isEmpty() || startDate != null || endDate != null;
+        }
+    }
+
+    /**
+     * Inner class to represent a tag name-value pair filter
+     */
+    public static class TagFilter {
+        private String name;
+        private String value;
+
+        public TagFilter(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+}

@@ -7,32 +7,49 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import photos32.controller.FilterController.FilterCriteria;
+import photos32.controller.FilterController.TagFilter;
 import photos32.model.Album;
+import photos32.model.TagType;
 import photos32.model.User;
 
 public class UserHomeController {
 
-    @FXML private FlowPane albumContainer;
     @FXML private Label userHomeHeader;
-    @FXML private TextField searchField;
     @FXML private Button signOutButton;
+    @FXML private FlowPane albumContainer;
+
+    @FXML private TextField searchField;
     @FXML private Button searchButton;
+    @FXML private Button filterButton;
+    @FXML private Button resetFilterButton;
 
     private User user;
-    private FilterPopUp filterPopup;
-    private Button filterButton;
-    private Button resetFilterButton;
+
+    private Map<String, String> tagFilters = new HashMap<>();
+    private String logicOperator = null;
+    private LocalDate fromDate = null;
+    private LocalDate toDate = null;
+    private boolean filtersActive = false;
+
+    private FilterCriteria currentFilterCriteria;
+
 
     public void setHeader(User user) {
         userHomeHeader.setText("Welcome, " + user.getUsername());
@@ -47,24 +64,13 @@ public class UserHomeController {
         return user;
     } 
 
+    public FilterCriteria getCurrentFilterCriteria() {
+        return currentFilterCriteria;
+    }
+
     @FXML
     public void initialize() {
-        // Find the HBox containing the search elements
-        HBox searchHBox = (HBox)searchField.getParent();
         
-        // Create the filter button
-        filterButton = new Button("Filter");
-        filterButton.setOnAction(event -> showFilterPopup());
-        
-        // Create the reset filter button (initially not visible)
-        resetFilterButton = new Button("Reset Filter");
-        resetFilterButton.setVisible(false);
-        resetFilterButton.setOnAction(event -> resetFilter());
-
-        // Add buttons to the search HBox
-        searchHBox.getChildren().add(2, filterButton);
-        searchHBox.getChildren().add(3, resetFilterButton);
-        HBox.setMargin(resetFilterButton, new Insets(0, 0, 0, 5));
     }
 
     // Append the album cards for each user to the album container in UserHome.fxml
@@ -178,76 +184,89 @@ public class UserHomeController {
 
 
 
-    @FXML
-    private void handleHelp() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Help");
-        alert.setHeaderText("How to Use Search");
-        alert.setContentText("Enter a date range, tags, or captions to find photos.\n\n"
-                + "Search Formats:\n"
-                + "- Date Range: MM-dd-yyyy to MM-dd-yyyy\n" // 01-01-2023 to 12-31-2023
-                + "- Single Tag: person=John\n"
-                + "- Tag Conjuction: person=John AND location=Paris\n"
-                + "- Tag Disjunction: person=John OR location=Paris\n\n"
-                + "Queries not following the above formats will assume to be captions");
-        alert.showAndWait();
-    }
 
     @FXML
     private void handleSearch() {
-        String query = searchField.getText().trim();
-
-        // Check if filter is applied
-        if (filterPopup != null && filterPopup.isFilterApplied()) {
-            Map<String, List<String>> tags = filterPopup.getSelectedTags();
-            LocalDate startDate = filterPopup.getStartDate();
-            LocalDate endDate = filterPopup.getEndDate();
-            
-            // Log filter parameters for debugging
-            System.out.println("Search query: " + query);
-            System.out.println("Filtering by tags: " + tags);
-            System.out.println("Date range: " + startDate + " to " + endDate);
-            
-            // Implement search logic with filters and with/without a query here
-            // searchPhotosWithFilters(query, tags, startDate, endDate);
-        } else {
-            // Regular search without filters
-            System.out.println("Search query: " + query);
-            // searchPhotos(query);
+        System.out.println("Filter results: ");
+        for (TagFilter tagFilter : currentFilterCriteria.getTagFilters()) {
+            System.out.println(tagFilter.getName());
         }
-        
+        System.out.println(currentFilterCriteria.getLogicalOperator());
+        System.out.println(currentFilterCriteria.getStartDate());
+        System.out.println(currentFilterCriteria.getEndDate());
     }
 
-    private void showFilterPopup() {
-        if (filterPopup == null) {
-            filterPopup = new FilterPopUp(searchField.getScene().getWindow(), user.getTagTypes());
-        }
-        
-        filterPopup.show();
-        
-        // If filters were applied, show the reset button
-        if (filterPopup.isFilterApplied()) {
-            resetFilterButton.setVisible(true);
+    @FXML
+    private void handleFilter() {
+        try {
+            // Load the filter window FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/FilterWindow.fxml"));
+            Parent root = loader.load();
+            
+            // Get controller and setup with available tag names
+            FilterController filterController = loader.getController();
+            
+            // Get available tag names
+            List<String> availableTagNames = new ArrayList<>();
+            for (TagType tagType : user.getTagTypes()) {
+                availableTagNames.add(tagType.getName());
+            }
+            
+            // Create new stage for filter window
+            Stage filterStage = new Stage();
+            filterStage.setTitle("Filter Photos");
+            filterStage.setHeight(400);
+            filterStage.setWidth(550);
+            filterStage.setMinHeight(400);
+            filterStage.setMinWidth(550);
+            filterStage.initModality(Modality.APPLICATION_MODAL); // Block input to other windows
+            filterStage.initOwner(filterButton.getScene().getWindow());
+            
+            // Setup the controller with existing criteria (if any)
+            filterController.setup(this, availableTagNames, filterStage, currentFilterCriteria);
+            
+            // Set scene and show the window
+            Scene scene = new Scene(root);
+            filterStage.setScene(scene);
+            filterStage.showAndWait();
+            
+        } catch (IOException e) {
+            // showErrorAlert("Error opening filter window", e.getMessage());
+            e.printStackTrace();
         }
     }
     
-    private void resetFilter() {
-        if (filterPopup != null) {
-            filterPopup.clearFilters();
-            resetFilterButton.setVisible(false);
+    @FXML
+    private void handleResetFilter() {
+       // Clear any active filters
+        currentFilterCriteria = null;
+        
+        // Update UI to reflect no active filters
+        resetFilterButton.setVisible(false);
+        
+        // Refresh the displayed albums/photos based on no filters
+        // refreshDisplay();
+    }
+
+    /**
+     * Apply the filter criteria passed from the FilterController
+     */
+    public void applyFilterCriteria(FilterController.FilterCriteria criteria) {
+        System.out.println(criteria);
+        if (criteria != null && criteria.hasFilters()) {
+            // Store the current filter criteria
+            this.currentFilterCriteria = criteria;
+            
+            // Show reset filter button since we now have active filters
+            resetFilterButton.setVisible(true);
+            
+            // Refresh the display with filters applied
+            // refreshDisplay();
+        } else {
+            // If criteria is empty, just reset filters
+            handleResetFilter();
         }
     }
-
-
-    private void searchPhotos(String query) {
-
-
-    }
-
-   
-
-
-
 
     @FXML
     private void handleSignOut() {

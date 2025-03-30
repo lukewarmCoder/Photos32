@@ -39,10 +39,16 @@
                         <Insets right="5.0" />
                      </HBox.margin>
                   </Button>
-                  <!-- <Button fx:id="helpButton" text="?" onAction="#handleHelp"
-                           style="-fx-shape: 'M 50,25 A 25,25 0 1,1 50,24.9'; -fx-background-radius: 50%; 
-                                    -fx-min-width: 22; -fx-min-height: 22; -fx-max-width: 22; -fx-max-height: 22;
-                                    -fx-font-weight: bold; -fx-font-size: 11px;"/> -->
+                  <Button fx:id="filterButton" onAction="#handleFilter" text="Filter">
+                     <HBox.margin>
+                        <Insets right="5.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="resetFilterButton" onAction="#handleResetFilter" text="Reset Filter" visible="false">
+                     <HBox.margin>
+                        <Insets right="5.0" />
+                     </HBox.margin>
+                  </Button>
                </children>
             </HBox>
          </children>
