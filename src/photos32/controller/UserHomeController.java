@@ -5,17 +5,13 @@ import java.time.LocalDate;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +22,7 @@ import java.util.Optional;
 import photos32.controller.FilterController.FilterCriteria;
 import photos32.controller.FilterController.TagFilter;
 import photos32.model.Album;
+import photos32.model.Tag;
 import photos32.model.TagType;
 import photos32.model.User;
 
@@ -46,7 +43,6 @@ public class UserHomeController {
     private String logicOperator = null;
     private LocalDate fromDate = null;
     private LocalDate toDate = null;
-    private boolean filtersActive = false;
 
     private FilterCriteria currentFilterCriteria;
 
@@ -187,13 +183,16 @@ public class UserHomeController {
 
     @FXML
     private void handleSearch() {
+
         System.out.println("Filter results: ");
         for (TagFilter tagFilter : currentFilterCriteria.getTagFilters()) {
-            System.out.println(tagFilter.getName());
+            System.out.println(tagFilter.getName() + " = " + tagFilter.getValue());
         }
         System.out.println(currentFilterCriteria.getLogicalOperator());
         System.out.println(currentFilterCriteria.getStartDate());
         System.out.println(currentFilterCriteria.getEndDate());
+
+        // TODO: Implement search logic and display photos on a new stage
     }
 
     @FXML
@@ -203,7 +202,6 @@ public class UserHomeController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/FilterWindow.fxml"));
             Parent root = loader.load();
             
-            // Get controller and setup with available tag names
             FilterController filterController = loader.getController();
             
             // Get available tag names
@@ -212,12 +210,11 @@ public class UserHomeController {
                 availableTagNames.add(tagType.getName());
             }
             
-            // Create new stage for filter window
             Stage filterStage = new Stage();
             filterStage.setTitle("Filter Photos");
-            filterStage.setHeight(400);
+            filterStage.setHeight(350);
             filterStage.setWidth(550);
-            filterStage.setMinHeight(400);
+            filterStage.setMinHeight(350);
             filterStage.setMinWidth(550);
             filterStage.initModality(Modality.APPLICATION_MODAL); // Block input to other windows
             filterStage.initOwner(filterButton.getScene().getWindow());
@@ -225,13 +222,13 @@ public class UserHomeController {
             // Setup the controller with existing criteria (if any)
             filterController.setup(this, availableTagNames, filterStage, currentFilterCriteria);
             
-            // Set scene and show the window
             Scene scene = new Scene(root);
             filterStage.setScene(scene);
             filterStage.showAndWait();
             
         } catch (IOException e) {
-            // showErrorAlert("Error opening filter window", e.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            showAlert(alert, null, "Error opening filter window", null);
             e.printStackTrace();
         }
     }
@@ -240,33 +237,28 @@ public class UserHomeController {
     private void handleResetFilter() {
        // Clear any active filters
         currentFilterCriteria = null;
-        
-        // Update UI to reflect no active filters
         resetFilterButton.setVisible(false);
-        
-        // Refresh the displayed albums/photos based on no filters
-        // refreshDisplay();
     }
 
     /**
      * Apply the filter criteria passed from the FilterController
      */
     public void applyFilterCriteria(FilterController.FilterCriteria criteria) {
-        System.out.println(criteria);
         if (criteria != null && criteria.hasFilters()) {
             // Store the current filter criteria
             this.currentFilterCriteria = criteria;
             
             // Show reset filter button since we now have active filters
             resetFilterButton.setVisible(true);
-            
-            // Refresh the display with filters applied
-            // refreshDisplay();
+        
         } else {
             // If criteria is empty, just reset filters
             handleResetFilter();
         }
     }
+
+
+
 
     @FXML
     private void handleSignOut() {

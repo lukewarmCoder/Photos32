@@ -2,7 +2,7 @@ package photos32.model;
 
 import java.io.Serializable;
 
-public class Tag implements Serializable, Comparable<Tag> {
+public class Tag implements Serializable {
     private String name;
     private String value;
     private TagType tagType;
@@ -57,21 +57,5 @@ public class Tag implements Serializable, Comparable<Tag> {
         return name.equalsIgnoreCase(tag.name) && 
                value.equalsIgnoreCase(tag.value);
     }
-
-    @Override
-    public int hashCode() {
-        return (name.toLowerCase() + "=" + value.toLowerCase()).hashCode();
-    }
-
-    @Override
-    public int compareTo(Tag other) {
-        // First compare by name, then by value
-        int nameComparison = this.name.compareToIgnoreCase(other.name);
-        if (nameComparison != 0) {
-            return nameComparison;
-        }
-        return this.value.compareToIgnoreCase(other.value);
-    }
-
 }
 

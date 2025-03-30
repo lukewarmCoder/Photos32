@@ -11,19 +11,16 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="500.0" spacing="15.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="photos32.controller.FilterController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" 
+      prefHeight="400.0" prefWidth="500.0" spacing="15.0" xmlns="http://javafx.com/javafx/19" 
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="photos32.controller.FilterController">
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
    </padding>
    <children>
-      <Label text="Filter Options">
-         <font>
-            <Font name="System Bold" size="18.0" />
-         </font>
-      </Label>
       <VBox spacing="10.0">
          <children>
-            <Label text="Filter by Tags" style="-fx-font-weight: bold;" />
+            <Label text="Filter by Tags" />
             <VBox fx:id="tagFiltersContainer" spacing="8.0">
                <children>
                   <HBox alignment="CENTER_LEFT" spacing="10.0">
@@ -60,7 +57,7 @@
       
       <VBox spacing="10.0">
          <children>
-            <Label text="Filter by Date Range" style="-fx-font-weight: bold;" />
+            <Label text="Filter by Date Range" />
             <HBox alignment="CENTER_LEFT" spacing="15.0">
                <children>
                   <Label text="From:" />
