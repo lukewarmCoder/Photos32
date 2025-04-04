@@ -1,7 +1,6 @@
 package photos32.controller;
 
 import java.io.*;
-import java.time.LocalDate;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,15 +13,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import photos32.controller.FilterController.FilterCriteria;
 import photos32.controller.FilterController.TagFilter;
 import photos32.model.Album;
-import photos32.model.Tag;
 import photos32.model.TagType;
 import photos32.model.User;
 
@@ -39,10 +35,10 @@ public class UserHomeController {
 
     private User user;
 
-    private Map<String, String> tagFilters = new HashMap<>();
-    private String logicOperator = null;
-    private LocalDate fromDate = null;
-    private LocalDate toDate = null;
+    // private Map<String, String> tagFilters = new HashMap<>();
+    // private String logicOperator = null;
+    // private LocalDate fromDate = null;
+    // private LocalDate toDate = null;
 
     private FilterCriteria currentFilterCriteria;
 
@@ -64,12 +60,12 @@ public class UserHomeController {
         return currentFilterCriteria;
     }
 
-    @FXML
-    public void initialize() {
-        
-    }
-
-    // Append the album cards for each user to the album container in UserHome.fxml
+    /**
+     * Load and display available albums in UserHome.fxml
+     * Removes existing album cards and repopulates them.
+     * 
+     * @throws IOException if loading AlbumCard.fxml fails.
+     */
     public void populateAlbumTiles() {
         // First, remove all present album cards
         albumContainer.getChildren().clear();
@@ -90,7 +86,13 @@ public class UserHomeController {
             }
         }
     }
-    
+
+    /**
+     * Displays a dialog for user input, validates the album title,
+     * and creates a new album if valid.
+     * 
+     * This method is triggered by an FXML button event.
+     */
     @FXML
     private void handleCreateAlbum() {
         boolean validInput = false;
@@ -155,6 +157,14 @@ public class UserHomeController {
         user.getAlbums().add(newAlbum);
     }
 
+    /**
+     * Opens an album and switches to the album view.
+     * Loads the album view UI, initializes the controller with the selected album and user, 
+     * and updates the UI elements.
+     * 
+     * @param album The album to be opened.
+     * @throws IOException if loading the album view fails.
+     */
     public void openAlbum(Album album) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/AlbumView.fxml"));
@@ -179,8 +189,6 @@ public class UserHomeController {
     }
 
 
-
-
     @FXML
     private void handleSearch() {
 
@@ -195,6 +203,15 @@ public class UserHomeController {
         // TODO: Implement search logic and display photos on a new stage
     }
 
+
+    /**
+     * Opens the filter window to allow users to apply tag-based search filters.
+     * Blocks input to other windows while the filter window is open.
+     * 
+     * This method is triggered by an FXML button event.
+     * 
+     * @throws IOException if loading the filter window fails.
+     */
     @FXML
     private void handleFilter() {
         try {
@@ -259,7 +276,14 @@ public class UserHomeController {
 
 
 
-
+    /**
+     * Handles user sign-out by prompting for confirmation.
+     * If the user confirms, loads the login screen and switches the scene.
+     * 
+     * This method is triggered by an FXML button event.
+     * 
+     * @throws IOException if loading the login screen fails.
+     */
     @FXML
     private void handleSignOut() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -280,6 +304,12 @@ public class UserHomeController {
         }
     }
 
+    /**
+     * Saves the current user data to a file.
+     * The user's data is serialized and stored in a file named after their username.
+     * 
+     * @throws IOException if an error occurs during file writing.
+     */
     public void saveUser() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
             oos.writeObject(user);
