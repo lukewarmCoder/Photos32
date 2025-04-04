@@ -138,8 +138,6 @@ public class FilterController {
         if (startDate.getValue() != null) criteria.setStartDate(startDate.getValue());
         if (endDate.getValue() != null) criteria.setEndDate(endDate.getValue());
         
-
-        
         // Pass filter criteria to parent controller
         parentController.applyFilterCriteria(criteria);
         
