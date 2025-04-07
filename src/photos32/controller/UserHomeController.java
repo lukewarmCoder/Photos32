@@ -37,11 +37,6 @@ public class UserHomeController {
 
     private User user;
 
-    // private Map<String, String> tagFilters = new HashMap<>();
-    // private String logicOperator = null;
-    // private LocalDate fromDate = null;
-    // private LocalDate toDate = null;
-
     private FilterCriteria currentFilterCriteria;
 
 

@@ -3,8 +3,11 @@ package photos32.controller;
 import java.io.*;
 import java.util.Optional;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
@@ -68,6 +71,103 @@ public class AlbumViewController {
     
     @FXML
     private void handleCreatePhoto() {
+        // Create initial popup with two options
+        Alert optionDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        optionDialog.setTitle("Add Photo");
+        optionDialog.setHeaderText("Choose Photo Source");
+        optionDialog.setContentText("Please select how you would like to add a photo:");
+
+        ButtonType stockPhotoButton = new ButtonType("Choose Stock Photo");
+        ButtonType fileChooserButton = new ButtonType("Choose From Files");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        optionDialog.getButtonTypes().setAll(stockPhotoButton, fileChooserButton, cancelButton);
+
+        // Show dialog and handle result
+        Optional<ButtonType> result = optionDialog.showAndWait();
+
+        if (result.isPresent()) {
+            if (result.get() == stockPhotoButton) {
+                handleStockPhotoSelection();
+            } else if (result.get() == fileChooserButton) {
+                handleFileSelection();
+            }
+            // If cancel, do nothing
+        }
+    }
+
+    // Method to handle stock photo selection
+    private void handleStockPhotoSelection() {
+        // Define your stock photos directory
+        String stockPhotosDir = "resources/"; // Adjust this path to your project structure
+        File stockDir = new File(stockPhotosDir);
+        
+        // Get list of stock photos
+        File[] stockPhotos = stockDir.listFiles((dir, name) -> 
+            name.toLowerCase().endsWith(".jpg") || 
+            name.toLowerCase().endsWith(".jpeg") || 
+            name.toLowerCase().endsWith(".png") ||
+            name.toLowerCase().endsWith(".gif") ||
+            name.toLowerCase().endsWith(".bmp"));
+        
+        if (stockPhotos == null || stockPhotos.length == 0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("No Stock Photos Found");
+            alert.setContentText("No stock photos were found in the directory: " + stockPhotosDir);
+            alert.showAndWait();
+            return;
+        }
+
+        // Create a dialog
+        Dialog<File> dialog = new Dialog<>();
+        dialog.setTitle("Choose Stock Photo");
+        dialog.setHeaderText("Select a stock photo to add to your album");
+        
+        // Set the button types
+        ButtonType selectButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(selectButtonType, ButtonType.CANCEL);
+        
+        // Create the list view with stock photo names
+        ListView<String> listView = new ListView<>();
+        ObservableList<String> items = FXCollections.observableArrayList();
+        
+        // Add file names to the list
+        for (File file : stockPhotos) {
+            items.add(file.getName());
+        }
+        
+        listView.setItems(items);
+        listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        listView.setPrefHeight(300);
+        listView.setPrefWidth(400);
+        
+        // Only enable the confirm button when a selection is made
+        Node selectButton = dialog.getDialogPane().lookupButton(selectButtonType);
+        selectButton.setDisable(true);
+        
+        listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            selectButton.setDisable(newValue == null);
+        });
+        
+        dialog.getDialogPane().setContent(listView);
+        
+        // Convert the result to a file when the select button is clicked
+        dialog.setResultConverter(dialogButton -> {
+            int selectedIndex = listView.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0) {
+                return stockPhotos[selectedIndex];
+            }
+            return null;
+        });
+        
+        // Show the dialog and process the result
+        Optional<File> result = dialog.showAndWait();
+        result.ifPresent(this::checkAndAddPhoto);
+    }
+
+
+    private void handleFileSelection() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image");
         fileChooser.getExtensionFilters().addAll(
@@ -85,72 +185,77 @@ public class AlbumViewController {
 
             Optional<ButtonType> confirmation = confirmDialog.showAndWait();
             if (confirmation.isPresent() && confirmation.get() == ButtonType.OK) {
-
-                // Check if a photo with the same filepath already exists in the current album...
-                for (Photo photo : album.getPhotos()) {
-                    if (photo.getFilepath().equals(selectedFile.getAbsolutePath())) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Error");
-                        alert.setHeaderText("Duplicate photo");
-                        alert.setContentText("The photo you selected already exists in this album.");
-                        alert.showAndWait();
-                        return;
-                    }
-                }
-
-                // Check if a photo with the same filepath already exists in another album...
-                // If so, then copy it to this album.
-                for (Album a : user.getAlbums()) {
-                    for (Photo photo : a.getPhotos()) {
-                        if (photo.getFilepath().equals(selectedFile.getAbsolutePath())) {
-                            Alert duplicatePhotoAlert = new Alert(Alert.AlertType.CONFIRMATION);
-                            showAlert(duplicatePhotoAlert, "Duplicate Photo Alert", "", 
-                                "The photo you selected already exists in the following album: '" + a.getTitle() + 
-                                "'. Proceeding will copy all photo data from that album to the current album.");
-
-                            Optional<ButtonType> confirmOptional = duplicatePhotoAlert.showAndWait();
-                            if (confirmOptional.isPresent() && confirmOptional.get() == ButtonType.OK) {
-                                album.getPhotos().add(photo);
-                                // Save changes
-                                saveUser();
-                                populatePhotoTiles();
-                                return;
-                            } else {
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                // Create new photo object
-                Photo newPhoto = new Photo(selectedFile.getAbsolutePath());
-                
-                // Ask for caption
-                TextInputDialog dialog = new TextInputDialog();
-                dialog.setTitle("Add Caption");
-                dialog.setHeaderText("Would you like to add a caption to this photo?");
-                dialog.setContentText("Caption (optional):");
-                
-                Optional<String> result = dialog.showAndWait();
-                if (result.isPresent()) {
-                    String caption = result.get().trim();
-                    if (!caption.isEmpty()) {
-                        newPhoto.setCaption(caption);
-                    }
-                }
-                
-                // Add to album
-                album.getPhotos().add(newPhoto);
-                
-                // Save changes
-                saveUser();
-                populatePhotoTiles();
+                checkAndAddPhoto(selectedFile);
             } else {
                 // User cancelled the confirmation dialog
                 System.out.println("File selection cancelled.");
             }
         }
     }
+
+    // Extract the photo checking and adding logic to be reusable
+    private void checkAndAddPhoto(File selectedFile) {
+        // Check if a photo with the same filepath already exists in the current album...
+        for (Photo photo : album.getPhotos()) {
+            if (photo.getFilepath().equals(selectedFile.getAbsolutePath())) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Duplicate photo");
+                alert.setContentText("The photo you selected already exists in this album.");
+                alert.showAndWait();
+                return;
+            }
+        }
+
+        // Check if a photo with the same filepath already exists in another album...
+        for (Album a : user.getAlbums()) {
+            for (Photo photo : a.getPhotos()) {
+                if (photo.getFilepath().equals(selectedFile.getAbsolutePath())) {
+                    Alert duplicatePhotoAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                    showAlert(duplicatePhotoAlert, "Duplicate Photo Alert", "", 
+                        "The photo you selected already exists in the following album: '" + a.getTitle() + 
+                        "'. Proceeding will copy all photo data from that album to the current album.");
+
+                    Optional<ButtonType> confirmOptional = duplicatePhotoAlert.showAndWait();
+                    if (confirmOptional.isPresent() && confirmOptional.get() == ButtonType.OK) {
+                        album.getPhotos().add(photo);
+                        // Save changes
+                        saveUser();
+                        populatePhotoTiles();
+                        return;
+                    } else {
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Create new photo object
+        Photo newPhoto = new Photo(selectedFile.getAbsolutePath());
+        
+        // Ask for caption
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Caption");
+        dialog.setHeaderText("Would you like to add a caption to this photo?");
+        dialog.setContentText("Caption (optional):");
+        
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String caption = result.get().trim();
+            if (!caption.isEmpty()) {
+                newPhoto.setCaption(caption);
+            }
+        }
+        
+        // Add to album
+        album.getPhotos().add(newPhoto);
+        
+        // Save changes
+        saveUser();
+        populatePhotoTiles();
+    }
+
+
 
     public void openPhoto(Photo photo) {
         try {
