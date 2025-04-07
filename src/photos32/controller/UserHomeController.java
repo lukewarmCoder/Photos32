@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import photos32.controller.FilterController.FilterCriteria;
 import photos32.controller.FilterController.TagFilter;
 import photos32.model.Album;
+import photos32.model.Photo;
 import photos32.model.TagType;
 import photos32.model.User;
 
@@ -201,6 +203,36 @@ public class UserHomeController {
         System.out.println(currentFilterCriteria.getEndDate());
 
         // TODO: Implement search logic and display photos on a new stage
+
+
+        // Creating a PhotoCard
+        List<Photo> searchResultPhotos = new ArrayList<>(); // Placeholder list to avoid errors
+
+        for (Photo photo : searchResultPhotos) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/PhotoCard.fxml"));
+                StackPane photoCard = loader.load();
+
+                // Assign the associated album with the photo
+                AlbumViewController albumView = new AlbumViewController();
+                for (Album album : user.getAlbums()) {
+                    for (Photo p : album.getPhotos()) {
+                        if (p.equals(photo)) albumView.setAlbum(album);
+                    }
+                }
+                albumView.setUser(user);
+    
+                PhotoCardController photoCardController = loader.getController();
+                photoCardController.setPhoto(photo);
+                photoCardController.setParentController(albumView); // Pass reference to parent
+                
+                // At this point, you can add the photo cards to the pop up window.
+                // photoContainer.getChildren().add(photoCard);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

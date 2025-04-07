@@ -175,7 +175,7 @@ public class PhotoCardController {
     }
 
     @FXML
-    private void handlePhotoMove() {
+    public void handlePhotoMove() {
         List<String> selectedAlbums = showAlbumSelectionDialog();
         if (selectedAlbums.isEmpty()) return;
 
@@ -261,5 +261,4 @@ public class PhotoCardController {
             parentController.populatePhotoTiles();
         }
     }
-    
 }
