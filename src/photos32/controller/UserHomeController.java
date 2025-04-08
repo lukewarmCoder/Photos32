@@ -202,7 +202,39 @@ public class UserHomeController {
 
         // Creating a PhotoCard
         List<Photo> searchResultPhotos = new ArrayList<>(); // Placeholder list to avoid errors
+        
+        //Loop through albums and photos
+        for (Album album : user.getAlbums()){
+            for (Photo photo : album.getPhotos()){
+                boolean matchesCriteria = true;
+                //Checking tag filters 
+                for (TagFilter tagFilter : currentTagFilterCriteria.getTagFilters()){
+                    if (!photo.hasTag(tagFilter.getName(), tagFilter.getValue())){
+                        matchesCriteria = false;
+                        if (currentFilterCriteria.getLogicalOperator().equals("AND")){
+                            break;
+                        }
+                    } else if (currentFilterCriteria.getLogicalOperator().equals("OR")){
+                        matchesCriteria = true;
+                        break;
+                    }
+                }
 
+                //checking date range
+                if (matchesCriteria){
+                    if (photo.getDate().isBefore(currentFilterCriteria.getStartDate()) ||
+                        photo.getDate().isAfter(currentFilterCriteria.getEndDate())){
+                        matchesCriteria = false;
+                    }
+                }
+
+                //adding photo to list if matches criteria
+                if (matchesCriteria){
+                    searchResultPhotos.add(photo);
+                }
+            }
+        }
+        
         for (Photo photo : searchResultPhotos) {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/PhotoCard.fxml"));
