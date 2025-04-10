@@ -255,6 +255,19 @@ public class UserHomeController {
                 
                 // At this point, you can add the photo cards to the pop up window.
                 // photoContainer.getChildren().add(photoCard);
+                try {
+                    FXMLLoader loader = new
+                        FXMLLoader(getClass().getResource("\photo32/view/SearchResultsPopup.fxml"));
+                    Parent root = loader.load();
+
+                    SearchResultsPopupController controller = loader.getController();
+                    controller.setSearchResultPhotos(searchResultPhotos);
+
+                    Stage stage = new Stage();
+                    stage.setTitle("Search Results");
+                    stage.setScene(new Scene(root));
+                    stage.show();
+                }
 
             } catch (IOException e) {
                 e.printStackTrace();
