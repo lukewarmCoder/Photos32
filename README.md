@@ -46,15 +46,30 @@ Before running this project, make sure you have the following installed:
 ## Getting Started
 
 ### Step 1: Clone the Repository
-1. Clone this repository to your local machine using Git:
-```
-git clone https://github.com/lukewarmCoder/Photos32.git
-```
+
+1. 🔐 Generate a GitHub Personal Access Token (PAT)
+    - Go to https://github.com/settings/tokens
+    - Click "Generate new token".
+    - Set a name (e.g., Clone Access) and choose an expiration.
+    - Under Repository access, select "Only select repositories" and choose **lukewarmCoder/Photos32**.
+    - Open Repository permissions, scroll down to "Contents", and change access to **"Read and write"**.
+    - Click "Generate token" at the bottom.
+        - Copy the token and save it somewhere safe!
+
+2. Clone the repository to your local machine using Git:
+    ```
+    git clone https://github.com/lukewarmCoder/Photos32.git
+    ```
+    - Git will ask for:
+        - **Username:** Your GitHub username
+        - **Password:** Paste the **personal access token**
+
 
 3. Navigate to the project folder:
-```
-cd Photos32
-```
+   
+    ```
+    cd Photos32
+    ```
 
 ### Step 2: Identify the path to your JavaFX SDK
 
@@ -62,23 +77,47 @@ cd Photos32
     - Example: /Downloads/javafx-sdk-21.0.6/lib/
 
 2. Set the temporary variable PATH_TO_FX to your JavaFX SDK path:
-```
-export PATH_TO_FX=/path/to/javafx-sdk/lib/
-```
+    - On Mac/Linux:
+      
+      ```
+      export PATH_TO_FX=/path/to/javafx-sdk/lib/
+      ```
+      
+    - On Windows (Command Prompt):
+      
+        ```
+        set PATH_TO_FX=C:\path\to\javafx-sdk\lib\
+        ```
 
-(This will only affect the current terminal session and will not persist after you close the terminal.)
+     (This will only affect the current terminal session and will not persist after you close the terminal.)
 
 ### Step 3: Compile and Run
 
 1. Compile the code
-```
-javac --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -d bin src/photos32/**/*.java
-```
+    - On Mac/Linux:
+        
+        ```
+        javac --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -d bin src/photos32/**/*.java
+        ```
+      
+    - On Windows (Command Prompt):
+      
+        ```
+        javac --module-path %PATH_TO_FX% --add-modules javafx.controls,javafx.fxml -d bin src\photos32\**\*.java
+        ```
 
-2. Run the application
-```
-java --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -cp bin photos32.Photos
-```
+3. Run the application
+    - On Mac/Linux:
+        
+        ```
+        java --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -cp bin photos32.Photos
+        ```
+      
+    - On Windows (Command Prompt):
+      
+        ```
+        java --module-path %PATH_TO_FX% --add-modules javafx.controls,javafx.fxml -cp bin photos32.Photos
+        ```
 
 ### Step 4: Enjoy the App!
 
