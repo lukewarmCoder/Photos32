@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import photos32.model.Album;
 import photos32.model.Photo;
 import photos32.model.User;
+import photos32.service.AlertUtil;
 import photos32.service.DataStore;
 
 public class AlbumViewController {
@@ -205,7 +206,7 @@ public class AlbumViewController {
         if (selectedFile != null) {
             // Intermediary confirmation window with file path
             Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-            parentController.showAlert(confirmDialog, "Confirm Selection", "Confirm Image Selection", 
+            AlertUtil.showAlert(confirmDialog, "Confirm Selection", "Confirm Image Selection", 
                 "File: " + selectedFile.getAbsolutePath());
 
             Optional<ButtonType> confirmation = confirmDialog.showAndWait();
@@ -243,7 +244,7 @@ public class AlbumViewController {
             for (Photo photo : a.getPhotos()) {
                 if (photo.getFilepath().equals(selectedFile.getAbsolutePath())) {
                     Alert duplicatePhotoAlert = new Alert(Alert.AlertType.CONFIRMATION);
-                    parentController.showAlert(duplicatePhotoAlert, "Duplicate Photo Alert", "", 
+                    AlertUtil.showAlert(duplicatePhotoAlert, "Duplicate Photo Alert", "", 
                         "The photo you selected already exists in the following album: '" + a.getTitle() + 
                         "'. Proceeding will copy all photo data from that album to the current album.");
 

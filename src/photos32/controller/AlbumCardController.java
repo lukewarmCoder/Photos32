@@ -8,6 +8,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
 
 import photos32.model.User;
+import photos32.service.AlertUtil;
 import photos32.service.DataStore;
 import photos32.model.Album;
 import photos32.model.Photo;
@@ -140,7 +141,7 @@ public class AlbumCardController {
             // Check if the title is empty
             if (newTitle.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                parentController.showAlert(alert, "Information", "Error: Invalid Album Name", 
+                AlertUtil.showAlert(alert, "Information", "Error: Invalid Album Name", 
                         "Album names cannot be empty!");
                 alert.showAndWait();
                 continue; // Go back to the start of the loop
@@ -151,7 +152,7 @@ public class AlbumCardController {
                 // if (album.getTitle().equals(newTitle)) break;
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                parentController.showAlert(alert, "Information", "Error: Duplicate Album", 
+                AlertUtil.showAlert(alert, "Information", "Error: Duplicate Album", 
                         "An album with that name already exists!");
                 alert.showAndWait();
                 continue; // Go back to the start of the loop
@@ -178,7 +179,7 @@ public class AlbumCardController {
     public void handleDelete() {
         // Create a confirmation alert before deleting the album
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        parentController.showAlert(alert, "Confirm Deletion", "Are you sure you want to delete this album?", 
+        AlertUtil.showAlert(alert, "Confirm Deletion", "Are you sure you want to delete this album?", 
             "This action cannot be undone.");
 
         // Show the alert and wait for the user's response

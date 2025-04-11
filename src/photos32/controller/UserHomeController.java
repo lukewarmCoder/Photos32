@@ -23,6 +23,7 @@ import photos32.model.Album;
 import photos32.model.Photo;
 import photos32.model.TagType;
 import photos32.model.User;
+import photos32.service.AlertUtil;
 import photos32.service.DataStore;
 
 public class UserHomeController {
@@ -111,7 +112,7 @@ public class UserHomeController {
             // Check if the title is empty
             if (title.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                showAlert(alert, "Information", "Error: Invalid Album Name", 
+                AlertUtil.showAlert(alert, "Information", "Error: Invalid Album Name", 
                         "Album names cannot be empty!");
                 alert.showAndWait();
                 continue; // Go back to the start of the loop
@@ -122,7 +123,7 @@ public class UserHomeController {
                 // if (album.getTitle().equals(newTitle)) break;
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                showAlert(alert, "Information", "Error: Duplicate Album", 
+                AlertUtil.showAlert(alert, "Information", "Error: Duplicate Album", 
                         "An album with that name already exists!");
                 alert.showAndWait();
                 continue; // Go back to the start of the loop
@@ -314,7 +315,7 @@ public class UserHomeController {
             
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            showAlert(alert, null, "Error opening filter window", null);
+            AlertUtil.showAlert(alert, null, "Error opening filter window", null);
             e.printStackTrace();
         }
     }
@@ -363,7 +364,7 @@ public class UserHomeController {
     @FXML
     private void handleSignOut() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        showAlert(alert, "Confirmation", null, "Are you sure you want to sign out?");
+        AlertUtil.showAlert(alert, "Confirmation", null, "Are you sure you want to sign out?");
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -379,19 +380,4 @@ public class UserHomeController {
             }
         }
     }
-
-    /**
-     * Utility method to configure and display an alert dialog.
-     *
-     * @param alert   the {@link Alert} to display
-     * @param title   the title of the alert
-     * @param header  the optional header text
-     * @param content the content message of the alert
-     */
-    public void showAlert(Alert alert, String title, String header, String content) {
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-    }
-
 }

@@ -21,6 +21,7 @@ import photos32.model.Photo;
 import photos32.model.Tag;
 import photos32.model.TagType;
 import photos32.model.User;
+import photos32.service.AlertUtil;
 import photos32.service.DataStore;
 import photos32.service.PhotoService;
 
@@ -97,6 +98,11 @@ public class PhotoViewController {
             cell.setContextMenu(contextMenu);
             return cell;
         });
+
+        if (isSearchResult) {
+            nextPhotoButton.setVisible(false);
+            previousPhotoButton.setVisible(false);
+        }
     }
 
     /**
@@ -128,13 +134,16 @@ public class PhotoViewController {
                 // Set a placeholder image
                 Image placeholder = new Image(getClass().getResourceAsStream("/photos32/resources/placeholder.png"));
                 photoImageView.setImage(placeholder);
-                showAlert(Alert.AlertType.WARNING, "Warning", null, 
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                AlertUtil.showAlert(alert, "Warning", null, 
                           "Original image file could not be found: " + photo.getFilepath());
+                alert.showAndWait();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", null, 
-                     "Error displaying image: " + e.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            AlertUtil.showAlert(alert, "Error", null, "Error displaying image: " + e.getMessage());
+            alert.showAndWait();
         }
 
         // Set caption
@@ -148,6 +157,11 @@ public class PhotoViewController {
             dateTimeLabel.setText(formattedDate);
         } else {
             dateTimeLabel.setText("No date available");
+        }
+
+        if (!isSearchResult) {
+            nextPhotoButton.setVisible(true);
+            previousPhotoButton.setVisible(true);
         }
     }
 
@@ -190,12 +204,12 @@ public class PhotoViewController {
     @FXML
     private void handlePhotoCopy() {
         List<String> selectedAlbums = PhotoService.showAlbumSelectionDialog(
-            parentController.getUser().getAlbums(), parentController.getAlbum().getTitle());
+            user.getAlbums(), parentController.getAlbum().getTitle());
         if (selectedAlbums.isEmpty()) return;
 
         // Make sure none of the selected albums already have the current photo in it.
         for (String albumTitle : selectedAlbums) {
-            for (Photo existingPhoto : parentController.getUser().getAlbumFromTitle(albumTitle).getPhotos()) {
+            for (Photo existingPhoto : user.getAlbumFromTitle(albumTitle).getPhotos()) {
                 if (existingPhoto.getFilepath().equals(photo.getFilepath())) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error: Invalid copy");
@@ -208,12 +222,12 @@ public class PhotoViewController {
         }
 
         for (String albumTitle : selectedAlbums) {
-            Album destAlbum = parentController.getUser().getAlbumFromTitle(albumTitle);
+            Album destAlbum = user.getAlbumFromTitle(albumTitle);
             if (destAlbum != null) {
                 destAlbum.getPhotos().add(photo);
             }
         }
-        DataStore.saveUser(parentController.getUser());
+        DataStore.saveUser(user);
     }
 
     /**
@@ -222,12 +236,12 @@ public class PhotoViewController {
     @FXML
     private void handlePhotoMove() {
         List<String> selectedAlbums = PhotoService.showAlbumSelectionDialog(
-            parentController.getUser().getAlbums(), parentController.getAlbum().getTitle());
+            user.getAlbums(), parentController.getAlbum().getTitle());
         if (selectedAlbums.isEmpty()) return;
 
         // Make sure none of the selected albums already have the current photo in it.
         for (String albumTitle : selectedAlbums) {
-            for (Photo existingPhoto : parentController.getUser().getAlbumFromTitle(albumTitle).getPhotos()) {
+            for (Photo existingPhoto : user.getAlbumFromTitle(albumTitle).getPhotos()) {
                 if (existingPhoto.getFilepath().equals(photo.getFilepath())) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error: Invalid move");
@@ -240,17 +254,17 @@ public class PhotoViewController {
         }
 
         for (String albumTitle : selectedAlbums) {
-            Album destAlbum = parentController.getUser().getAlbumFromTitle(albumTitle);
+            Album destAlbum = user.getAlbumFromTitle(albumTitle);
             if (destAlbum != null) {
                 destAlbum.getPhotos().add(photo);
             }
         }
         parentController.getAlbum().getPhotos().remove(photo);
-        DataStore.saveUser(parentController.getUser());
+        DataStore.saveUser(user);
         parentController.populatePhotoTiles();
 
         if (isSearchResult) {
-            // handle back to search results
+            handleBackToSearchResults();
         } else {
             handleBackToAlbumView();
         }
@@ -274,7 +288,11 @@ public class PhotoViewController {
             
             // Update UI (handled by AlbumViewController)
             parentController.populatePhotoTiles();
-            handleBackToAlbumView();
+            if (isSearchResult) {
+                handleBackToSearchResults();
+            } else {
+                handleBackToAlbumView();
+            }
         }
     }
 
@@ -283,13 +301,14 @@ public class PhotoViewController {
      */
     @FXML
     private void handleBackToAlbumView() {
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/AlbumView.fxml"));
             Scene scene = new Scene(loader.load());
 
             AlbumViewController controller = loader.getController();
             controller.setAlbum(parentController.getAlbum());
-            controller.setUser(parentController.getUser());
+            controller.setUser(user);
             controller.setHeader();
             controller.populatePhotoTiles();
 
@@ -301,30 +320,30 @@ public class PhotoViewController {
         }
     }
 
+    private void handleBackToSearchResults() {
+
+    }
+
     /**
      * Navigates to the previous photo in the album.
      */
     @FXML private void handlePreviousPhoto() {
-        if (isSearchResult) {
+        if (parentController == null || parentController.getAlbum() == null) return;
 
-        } else {
-            if (parentController == null || parentController.getAlbum() == null) return;
+        List<Photo> photos = parentController.getAlbum().getPhotos();
+        if (photos.isEmpty()) return;
 
-            List<Photo> photos = parentController.getAlbum().getPhotos();
-            if (photos.isEmpty()) return;
+        // Find current photo's index
+        int currentIndex = photos.indexOf(photo);
+        
+        // Navigate to previous photo (wrapping around to the end if at the start)
+        int previousIndex = (currentIndex - 1 + photos.size()) % photos.size();
+        Photo previousPhoto = photos.get(previousIndex);
 
-            // Find current photo's index
-            int currentIndex = photos.indexOf(photo);
-            
-            // Navigate to previous photo (wrapping around to the end if at the start)
-            int previousIndex = (currentIndex - 1 + photos.size()) % photos.size();
-            Photo previousPhoto = photos.get(previousIndex);
-
-            // Update photo and display
-            this.photo = previousPhoto;
-            displayPhoto();
-            updateTagListView();
-        }
+        // Update photo and display
+        this.photo = previousPhoto;
+        displayPhoto();
+        updateTagListView();
     }
 
     /**
@@ -332,26 +351,22 @@ public class PhotoViewController {
      */
     @FXML
     private void handleNextPhoto() {
-        if (isSearchResult) {
+        if (parentController == null || parentController.getAlbum() == null) return;
 
-        } else {
-            if (parentController == null || parentController.getAlbum() == null) return;
+        List<Photo> photos = parentController.getAlbum().getPhotos();
+        if (photos.isEmpty()) return;
 
-            List<Photo> photos = parentController.getAlbum().getPhotos();
-            if (photos.isEmpty()) return;
+        // Find current photo's index
+        int currentIndex = photos.indexOf(photo);
+        
+        // Navigate to next photo (wrapping around to the start if at the end)
+        int nextIndex = (currentIndex + 1) % photos.size();
+        Photo nextPhoto = photos.get(nextIndex);
 
-            // Find current photo's index
-            int currentIndex = photos.indexOf(photo);
-            
-            // Navigate to next photo (wrapping around to the start if at the end)
-            int nextIndex = (currentIndex + 1) % photos.size();
-            Photo nextPhoto = photos.get(nextIndex);
-
-            // Update photo and display
-            this.photo = nextPhoto;
-            displayPhoto();
-            updateTagListView();
-        }
+        // Update photo and display
+        this.photo = nextPhoto;
+        displayPhoto();
+        updateTagListView();
     }
 
     /**
@@ -359,7 +374,7 @@ public class PhotoViewController {
      */
     @FXML
     private void handleAddTag() {
-        List<TagType> existingTagTypes = parentController.getUser().getTagTypes();
+        List<TagType> existingTagTypes = user.getTagTypes();
         
         Dialog<Tag> dialog = createTagDialog();
     
@@ -452,7 +467,7 @@ public class PhotoViewController {
                     
                     // Create new tag type with multiple values option
                     selectedTagType = new TagType(newTagTypeName, multipleValuesCheckBox.isSelected());
-                    parentController.getUser().getTagTypes().add(selectedTagType);
+                    user.getTagTypes().add(selectedTagType);
                 } else {
                     // Using existing tag type
                     selectedTagType = (TagType)tagTypeComboBox.getValue();
@@ -479,13 +494,11 @@ public class PhotoViewController {
                 updateTagListView();
                 
                 // Save user data
-                DataStore.saveUser(parentController.getUser());
+                DataStore.saveUser(user);
             } catch (IllegalArgumentException e) {
                 // Show error alert
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Tag Addition Error");
-                alert.setHeaderText(null);
-                alert.setContentText(e.getMessage());
+                AlertUtil.showAlert(alert, "Tag Addition Error", null, e.getMessage());
                 alert.showAndWait();
             }
         });
@@ -505,15 +518,7 @@ public class PhotoViewController {
             
             // Update the ListView
             updateTagListView();
-            DataStore.saveUser(parentController.getUser());
+            DataStore.saveUser(user);
         }
-    }
-    
-    private void showAlert(Alert.AlertType type, String title, String header, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 }
