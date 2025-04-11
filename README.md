@@ -71,9 +71,9 @@ Before running this project, make sure you have the following installed:
     cd Photos32
     ```
 
-### Step 2: Identify the path to your JavaFX SDK
+### Step 2: Set the path to your JavaFX SDK
 
-1. You need to point to the lib/ folder inside the JavaFX SDK you downloaded.
+1. Identify the path to the lib/ folder inside the JavaFX SDK.
     - Example: /Downloads/javafx-sdk-21.0.6/lib/
 
 2. Set the temporary variable PATH_TO_FX to your JavaFX SDK path:
@@ -91,22 +91,9 @@ Before running this project, make sure you have the following installed:
 
      (This will only affect the current terminal session and will not persist after you close the terminal.)
 
-### Step 3: Compile and Run
+### Step 3: Run the Application
 
-1. Compile the code
-    - On Mac/Linux:
-        
-        ```
-        javac --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -d bin src/photos32/**/*.java
-        ```
-      
-    - On Windows (Command Prompt):
-      
-        ```
-        javac --module-path %PATH_TO_FX% --add-modules javafx.controls,javafx.fxml -d bin src\photos32\**\*.java
-        ```
-
-3. Run the application
+1. Run the following command.
     - On Mac/Linux:
         
         ```
