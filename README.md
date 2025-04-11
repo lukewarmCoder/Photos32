@@ -54,7 +54,7 @@ Before running this project, make sure you have the following installed:
     - Under Repository access, select "Only select repositories" and choose **lukewarmCoder/Photos32**.
     - Open Repository permissions, scroll down to "Contents", and change access to **"Read and write"**.
     - Click "Generate token" at the bottom.
-        - Copy the token and save it somewhere safe!
+    - Copy the token and save it somewhere safe!
 
 2. Clone the repository to your local machine using Git:
     ```
