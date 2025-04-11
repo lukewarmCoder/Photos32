@@ -121,7 +121,8 @@ Before running this project, make sure you have the following installed:
 
 ### Step 4: Enjoy the App!
 
-Once you've completed the above steps, the application should start and the interface should be displayed.
+Once you've completed the above steps, the application should start and the interface should be displayed. 
+If you have any issues running the application please reach out to us.
 
 
 
