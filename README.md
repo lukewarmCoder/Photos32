@@ -19,6 +19,7 @@ Photos32/
 │       │   ├── AdminHome.fxml
 │       │   ├── AlbumCard.fxml
 │       │   ├── AlbumView.fxml
+│       │   ├── FilterWindow.fxml
 │       │   ├── Login.fxml
 │       │   ├── PhotoCard.fxml
 │       │   ├── PhotoView.fxml
@@ -27,6 +28,7 @@ Photos32/
 │       │   ├── AdminHomeController.java
 │       │   ├── AlbumCardController.java
 │       │   ├── AlbumViewController.java
+│       │   ├── FilterController.java
 │       │   ├── LoginController.java
 │       │   ├── PhotoCardController.java
 │       │   ├── PhotoViewController.java

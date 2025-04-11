@@ -300,4 +300,8 @@ public class PhotoCardController {
             parentController.populatePhotoTiles();
         }
     }
+
+    public void deletePhoto() {
+        
+    }
 }
