@@ -24,9 +24,15 @@ public class PhotoCardController {
     @FXML private MenuButton dropdownMenu;
     @FXML private Label caption;
 
-    private Photo photo;
     private AlbumViewController parentController;
+    private Photo photo;
 
+    /**
+     * Initializes the photo card UI.
+     * <p>
+     * Adds hover animations, sets rounded corners on the thumbnail, and sets up
+     * click listeners for viewing the photo.
+     */
     @FXML
     private void initialize() {
 
@@ -58,6 +64,15 @@ public class PhotoCardController {
         // dateTimeLabel.setOnMouseClicked(event -> handleViewPhoto());
     }
 
+    public void setParentController(AlbumViewController controller) {
+        this.parentController = controller;
+    }
+
+    /**
+     * Sets the photo associated with this card and updates the thumbnail and caption.
+     *
+     * @param photo the {@link Photo} to display
+     */
     public void setPhoto(Photo photo) {
         this.photo = photo;
         
@@ -117,17 +132,17 @@ public class PhotoCardController {
         }
     }
 
-
-
-    public void setParentController(AlbumViewController controller) {
-        this.parentController = controller;
-    }
-
+    /**
+     * Opens the photo in a detailed view.
+     */
     @FXML
     private void handleViewPhoto() {
         parentController.openPhoto(photo);
     }
 
+    /**
+     * Opens a dialog to edit the photo's caption.
+     */
     @FXML
     private void handleEditCaption() {
         // Dialog for editing caption
@@ -142,10 +157,13 @@ public class PhotoCardController {
             caption.setText(photo.getCaption().isEmpty() ? "No caption" : photo.getCaption());
             
             // Save changes
-            parentController.saveUser();
+            parentController.getParentController().saveUser();
         }
     }
 
+    /**
+     * Opens an album selection dialog and copies the photo to the selected albums.
+     */
     @FXML
     private void handlePhotoCopy() {
         List<String> selectedAlbums = showAlbumSelectionDialog();
@@ -171,9 +189,12 @@ public class PhotoCardController {
                 destAlbum.getPhotos().add(photo);
             }
         }
-        parentController.saveUser();
+        parentController.getParentController().saveUser();
     }
 
+    /**
+     * Moves the photo to selected albums and removes it from the current album.
+     */
     @FXML
     public void handlePhotoMove() {
         List<String> selectedAlbums = showAlbumSelectionDialog();
@@ -200,16 +221,26 @@ public class PhotoCardController {
             }
         }
         parentController.getAlbum().getPhotos().remove(photo);
-        parentController.saveUser();
+        parentController.getParentController().saveUser();
         parentController.populatePhotoTiles();
     }
 
+    /**
+     * Displays a dialog to select one or more destination albums.
+     *
+     * @return a list of selected album titles, or an empty list if none selected
+     */
     private List<String> showAlbumSelectionDialog() {
         Dialog<List<String>> dialog = createDialog();
         Optional<List<String>> result = dialog.showAndWait();
         return result.orElse(Collections.emptyList());
     }
 
+    /**
+     * Creates the album selection dialog.
+     *
+     * @return the dialog instance
+     */
     private Dialog<List<String>> createDialog() {
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Select Destination Album(s)");
@@ -232,6 +263,11 @@ public class PhotoCardController {
         return dialog;
     }
 
+    /**
+     * Creates a list view of albums to display in the album selection dialog.
+     *
+     * @return the {@link ListView} of album titles
+     */
     private ListView<String> createAlbumListView() {
         ListView<String> listView = new ListView<>();
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -245,6 +281,9 @@ public class PhotoCardController {
         return listView;
     }
 
+    /**
+     * Handles deletion of the photo after user confirmation.
+     */
     @FXML
     private void handleDeletePhoto() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);

@@ -34,9 +34,15 @@ public class PhotoViewController {
     @FXML private Button previousPhotoButton;
     @FXML private Button nextPhotoButton;
 
-    private Photo photo;
     private AlbumViewController parentController;
+    private Photo photo;
 
+    /**
+     * Initializes the photo view.
+     * <p>
+     * Binds the image view to its container for responsive scaling,
+     * and sets up a context menu on tags for deletion.
+     */
     @FXML
     public void initialize() {
         // Bind the ImageView to resize with the container
@@ -73,11 +79,18 @@ public class PhotoViewController {
         });
     }
 
+    public void setParentController(AlbumViewController controller) {
+        this.parentController = controller;
+    }
+
     public void setPhoto(Photo photo) {
         this.photo = photo;
         updateTagListView();
     }
 
+    /**
+     * Updates the tag list view with the tags from the current photo.
+     */
     private void updateTagListView() {
         if (photo != null) {
             // Clear existing items and add all tags from the current photo
@@ -90,10 +103,9 @@ public class PhotoViewController {
         }   
     }
 
-    public void setParentController(AlbumViewController controller) {
-        this.parentController = controller;
-    }
-
+    /**
+     * Displays the full-sized photo, caption, and timestamp in the UI.
+     */
     public void displayPhoto() {
         // Load and display full-size image
         try {
@@ -128,6 +140,9 @@ public class PhotoViewController {
         }
     }
 
+    /**
+     * Updates the caption label based on the photo's caption.
+     */
     private void updateCaptionDisplay() {
         if (photo.getCaption() != null && !photo.getCaption().isEmpty()) {
             caption.setText(photo.getCaption());
@@ -136,6 +151,9 @@ public class PhotoViewController {
         }
     }
 
+    /**
+     * Handles editing the photo caption via a dialog.
+     */
     @FXML
     private void handleEditCaption() {
         TextInputDialog dialog = new TextInputDialog(photo.getCaption());
@@ -150,10 +168,13 @@ public class PhotoViewController {
             updateCaptionDisplay();
             
             // Save changes
-            parentController.saveUser();
+            parentController.getParentController().saveUser();
         }
     }
 
+    /**
+     * Copies the photo to selected albums if not already present.
+     */
     @FXML
     private void handlePhotoCopy() {
         List<String> selectedAlbums = showAlbumSelectionDialog();
@@ -179,9 +200,12 @@ public class PhotoViewController {
                 destAlbum.getPhotos().add(photo);
             }
         }
-        parentController.saveUser();
+        parentController.getParentController().saveUser();
     }
 
+    /**
+     * Moves the photo to selected albums, removing it from the current one.
+     */
     @FXML
     private void handlePhotoMove() {
         List<String> selectedAlbums = showAlbumSelectionDialog();
@@ -208,18 +232,28 @@ public class PhotoViewController {
             }
         }
         parentController.getAlbum().getPhotos().remove(photo);
-        parentController.saveUser();
+        parentController.getParentController().saveUser();
         parentController.populatePhotoTiles();
 
         handleBackToAlbumView();
     }
 
+    /**
+     * Displays a dialog to allow selection of destination albums.
+     *
+     * @return list of selected album titles
+     */
     private List<String> showAlbumSelectionDialog() {
         Dialog<List<String>> dialog = createDialog();
         Optional<List<String>> result = dialog.showAndWait();
         return result.orElse(Collections.emptyList());
     }
 
+    /**
+     * Creates the album selection dialog UI.
+     *
+     * @return the dialog instance
+     */
     private Dialog<List<String>> createDialog() {
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Select Destination Album(s)");
@@ -242,6 +276,11 @@ public class PhotoViewController {
         return dialog;
     }
 
+    /**
+     * Creates the list view of albums for selection.
+     *
+     * @return {@link ListView} of album titles
+     */
     private ListView<String> createAlbumListView() {
         ListView<String> listView = new ListView<>();
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -254,6 +293,9 @@ public class PhotoViewController {
         return listView;
     }
 
+    /**
+     * Deletes the current photo after user confirmation.
+     */
     @FXML
     private void handleDeletePhoto() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -272,6 +314,9 @@ public class PhotoViewController {
         }
     }
 
+    /**
+     * Returns the user to the album view screen.
+     */
     @FXML
     private void handleBackToAlbumView() {
         try {
@@ -292,8 +337,9 @@ public class PhotoViewController {
         }
     }
 
-    
-
+    /**
+     * Navigates to the previous photo in the album.
+     */
     @FXML private void handlePreviousPhoto() {
         if (parentController == null || parentController.getAlbum() == null) return;
 
@@ -313,6 +359,9 @@ public class PhotoViewController {
         updateTagListView();
     }
 
+    /**
+     * Navigates to the next photo in the album.
+     */
     @FXML
     private void handleNextPhoto() {
         if (parentController == null || parentController.getAlbum() == null) return;
@@ -333,8 +382,9 @@ public class PhotoViewController {
         updateTagListView();
     }
 
-    
-
+    /**
+     * Handles adding a tag to the photo via a custom tag dialog.
+     */
     @FXML
     private void handleAddTag() {
         List<TagType> existingTagTypes = parentController.getUser().getTagTypes();
@@ -459,7 +509,7 @@ public class PhotoViewController {
                 updateTagListView();
                 
                 // Save user data
-                parentController.saveUser();
+                parentController.getParentController().saveUser();
             } catch (IllegalArgumentException e) {
                 // Show error alert
                 Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -478,10 +528,10 @@ public class PhotoViewController {
             
             // Update the ListView
             updateTagListView();
-            parentController.saveUser();
+            parentController.getParentController().saveUser();
         }
     }
-
+    
     private void showAlert(Alert.AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

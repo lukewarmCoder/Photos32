@@ -1,16 +1,12 @@
 package photos32.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import photos32.model.Tag;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -32,6 +28,12 @@ public class FilterController {
     private Stage stage;
     private FilterCriteria existingCriteria;
 
+    /**
+     * Initializes the controller by setting up the logical operator dropdown and action handlers
+     * for the cancel and apply buttons.
+     * <p>
+     * This method is called when the controller is loaded, and it configures the UI controls accordingly.
+     */
     @FXML
     public void initialize() {
         // Setup logical operator dropdown
@@ -44,7 +46,16 @@ public class FilterController {
     }
 
     /**
-     * Set up the controller with reference to parent and available tag names
+     * Sets up the controller with references to the parent controller, available tag names, 
+     * the current stage, and existing filter criteria (if any).
+     * <p>
+     * This method populates the tag name dropdowns, initializes focus listeners, and loads any existing 
+     * filter criteria into the UI controls.
+     *
+     * @param parentController the parent controller to pass the filter criteria back to
+     * @param tagNames         a list of tag names to populate the dropdowns
+     * @param stage            the current stage (window) for the UI
+     * @param existingCriteria the existing filter criteria to load into the UI (can be null)
      */
     public void setup(UserHomeController parentController, List<String> tagNames, Stage stage, FilterCriteria existingCriteria) {
         this.parentController = parentController;
@@ -62,7 +73,12 @@ public class FilterController {
     }
 
     /**
-     * Show the second tag field when a logical operator has been chosen from the dropdown
+     * Toggles the visibility of the second tag input field based on the selected logical operator.
+     * <p>
+     * If a valid logical operator ("AND" or "OR") is selected, the second tag input field will be displayed.
+     * If no operator is selected, the second tag field will be hidden.
+     *
+     * @param operator the selected logical operator (either "AND" or "OR")
      */
     private void toggleSecondTag(String operator) {
         boolean show = operator != null && !operator.isEmpty();
@@ -71,7 +87,10 @@ public class FilterController {
     }
 
     /**
-     * Load existing filter criteria into UI controls
+     * Loads existing filter criteria (if available) into the UI controls.
+     * <p>
+     * If there are existing tag filters, their values will be set in the dropdowns and text fields. 
+     * Additionally, any date filters will be populated.
      */
     private void loadExistingCriteria() {
         if (existingCriteria == null) return;
@@ -103,13 +122,19 @@ public class FilterController {
     }
 
     /**
-     * Setup focus listeners for tag value fields to commit when focus is lost
+     * Sets up focus listeners for the tag value fields, so that when the user finishes editing
+     * and the field loses focus, the value is committed.
      */
     private void setupFocusListeners() {
         addFocusListener(tagValue1);
         addFocusListener(tagValue2);
     }
 
+    /**
+     * Adds a focus listener to a text field, which commits the text when the field loses focus.
+     *
+     * @param field the text field to add the focus listener to
+     */
     private void addFocusListener(TextField field) {
         field.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal) field.setText(field.getText().trim());
@@ -117,7 +142,10 @@ public class FilterController {
     }
 
     /**
-     * Apply the filter criteria and close the window
+     * Applies the filter criteria based on the user's selections and closes the filter window.
+     * <p>
+     * This method collects the filter criteria (tags and dates), creates a FilterCriteria object, 
+     * and passes it back to the parent controller. It then closes the current filter window.
      */
     private void applyFilters() {
 
@@ -146,7 +174,13 @@ public class FilterController {
     }
 
     /**
-     * Validates the DatePicker input.
+     * Validates the date input for a DatePicker to ensure it matches the expected MM-DD-YYYY format.
+     * <p>
+     * If the input is valid, the DatePicker will be updated with the parsed date.
+     * If the input is invalid, it will be rejected and the method returns false.
+     *
+     * @param datePicker the DatePicker to validate
+     * @return true if the input date is valid, false otherwise
      */
     private boolean isValidDate(DatePicker datePicker) {
         String inputText = datePicker.getEditor().getText().trim();
@@ -170,14 +204,6 @@ public class FilterController {
         } catch (DateTimeParseException e) {
             return false;
         }
-    }
-
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 
     // Inner class to hold filter criteria

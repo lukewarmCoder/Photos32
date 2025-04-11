@@ -59,9 +59,7 @@ public class UserHomeController {
 
     /**
      * Load and display available albums in UserHome.fxml
-     * Removes existing album cards and repopulates them.
-     * 
-     * @throws IOException if loading AlbumCard.fxml fails.
+     * Removes existing album cards and repopulates them. 
      */
     public void populateAlbumTiles() {
         // First, remove all present album cards
@@ -160,7 +158,6 @@ public class UserHomeController {
      * and updates the UI elements.
      * 
      * @param album The album to be opened.
-     * @throws IOException if loading the album view fails.
      */
     public void openAlbum(Album album) {
         try {
@@ -169,6 +166,7 @@ public class UserHomeController {
             
             // Get the controller and pass necessary data
             AlbumViewController controller = loader.getController();
+            controller.setParentController(this);
             controller.setAlbum(album);
             controller.setUser(user);  // Pass the current user
             
@@ -257,7 +255,7 @@ public class UserHomeController {
                 // photoContainer.getChildren().add(photoCard);
                 try {
                     FXMLLoader loader = new
-                        FXMLLoader(getClass().getResource("\photo32/view/SearchResultsPopup.fxml"));
+                        FXMLLoader(getClass().getResource("/photo32/view/SearchResultsPopup.fxml"));
                     Parent root = loader.load();
 
                     SearchResultsPopupController controller = loader.getController();
@@ -275,14 +273,11 @@ public class UserHomeController {
         }
     }
 
-
     /**
      * Opens the filter window to allow users to apply tag-based search filters.
      * Blocks input to other windows while the filter window is open.
      * 
      * This method is triggered by an FXML button event.
-     * 
-     * @throws IOException if loading the filter window fails.
      */
     @FXML
     private void handleFilter() {
@@ -321,7 +316,13 @@ public class UserHomeController {
             e.printStackTrace();
         }
     }
-    
+
+    /**
+    * Handles the action of resetting any active filters.
+    * <p>
+    * This method is typically triggered by a UI event (e.g., clicking the reset filter button).
+    * It clears the current filter criteria and hides the reset button.
+    */
     @FXML
     private void handleResetFilter() {
        // Clear any active filters
@@ -330,7 +331,12 @@ public class UserHomeController {
     }
 
     /**
-     * Apply the filter criteria passed from the FilterController
+     * Applies the given filter criteria to the view.
+     * 
+     * If the provided criteria contain valid filters, they are stored and the reset button is made visible.
+     * If the criteria are empty or null, the filters are reset.
+     *
+     * @param criteria the {@link FilterController.FilterCriteria} object containing the filter conditions
      */
     public void applyFilterCriteria(FilterController.FilterCriteria criteria) {
         if (criteria != null && criteria.hasFilters()) {
@@ -346,15 +352,11 @@ public class UserHomeController {
         }
     }
 
-
-
     /**
      * Handles user sign-out by prompting for confirmation.
      * If the user confirms, loads the login screen and switches the scene.
      * 
      * This method is triggered by an FXML button event.
-     * 
-     * @throws IOException if loading the login screen fails.
      */
     @FXML
     private void handleSignOut() {
@@ -379,8 +381,6 @@ public class UserHomeController {
     /**
      * Saves the current user data to a file.
      * The user's data is serialized and stored in a file named after their username.
-     * 
-     * @throws IOException if an error occurs during file writing.
      */
     public void saveUser() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
@@ -390,7 +390,15 @@ public class UserHomeController {
         }
     }
 
-    private void showAlert(Alert alert, String title, String header, String content) {
+    /**
+     * Utility method to configure and display an alert dialog.
+     *
+     * @param alert   the {@link Alert} to display
+     * @param title   the title of the alert
+     * @param header  the optional header text
+     * @param content the content message of the alert
+     */
+    public void showAlert(Alert alert, String title, String header, String content) {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);

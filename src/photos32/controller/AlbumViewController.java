@@ -25,8 +25,13 @@ public class AlbumViewController {
     @FXML private Label albumViewHeader;
     @FXML private Button backButton;
 
+    private UserHomeController parentController;
     private Album album;
     private User user;
+
+    public void setParentController(UserHomeController parentController) {
+        this.parentController = parentController;
+    }
 
     public void setAlbum(Album album) {
         this.album = album;
@@ -34,6 +39,10 @@ public class AlbumViewController {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public UserHomeController getParentController() {
+        return parentController;
     }
 
     public User getUser() {
@@ -48,7 +57,11 @@ public class AlbumViewController {
         albumViewHeader.setText(album.getTitle());
     }
 
-    // Populate the album view with photo tiles
+   /**
+     * Populates the photo container with photo tiles representing each photo in the current album.
+     * <p>
+     * Loads FXML components for each photo and sets their corresponding data and parent controller reference.
+     */
     public void populatePhotoTiles() {
         // First, remove all present photo cards
         photoContainer.getChildren().clear();
@@ -69,6 +82,9 @@ public class AlbumViewController {
         }
     }
     
+    /**
+     * Handles the "Add Photo" action by presenting a dialog to choose between stock photos and local file selection.
+     */
     @FXML
     private void handleCreatePhoto() {
         // Create initial popup with two options
@@ -96,7 +112,11 @@ public class AlbumViewController {
         }
     }
 
-    // Method to handle stock photo selection
+    /**
+     * Displays a dialog to allow the user to select a stock photo from a predefined directory.
+     * <p>
+     * Adds the selected photo to the album after confirmation.
+     */
     private void handleStockPhotoSelection() {
         // Define your stock photos directory
         String stockPhotosDir = "resources/"; // Adjust this path to your project structure
@@ -166,7 +186,11 @@ public class AlbumViewController {
         result.ifPresent(this::checkAndAddPhoto);
     }
 
-
+    /**
+     * Opens a file chooser for selecting an image file from the local file system.
+     * <p>
+     * Adds the photo to the album upon confirmation.
+     */
     private void handleFileSelection() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image");
@@ -180,7 +204,7 @@ public class AlbumViewController {
         if (selectedFile != null) {
             // Intermediary confirmation window with file path
             Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-            showAlert(confirmDialog, "Confirm Selection", "Confirm Image Selection", 
+            parentController.showAlert(confirmDialog, "Confirm Selection", "Confirm Image Selection", 
                 "File: " + selectedFile.getAbsolutePath());
 
             Optional<ButtonType> confirmation = confirmDialog.showAndWait();
@@ -193,7 +217,13 @@ public class AlbumViewController {
         }
     }
 
-    // Extract the photo checking and adding logic to be reusable
+    /**
+     * Validates the selected image file and adds it to the current album.
+     * <p>
+     * Checks for duplicates in the same or other albums, prompts for caption, and refreshes the photo view.
+     *
+     * @param selectedFile the image file to add
+     */
     private void checkAndAddPhoto(File selectedFile) {
         // Check if a photo with the same filepath already exists in the current album...
         for (Photo photo : album.getPhotos()) {
@@ -212,7 +242,7 @@ public class AlbumViewController {
             for (Photo photo : a.getPhotos()) {
                 if (photo.getFilepath().equals(selectedFile.getAbsolutePath())) {
                     Alert duplicatePhotoAlert = new Alert(Alert.AlertType.CONFIRMATION);
-                    showAlert(duplicatePhotoAlert, "Duplicate Photo Alert", "", 
+                    parentController.showAlert(duplicatePhotoAlert, "Duplicate Photo Alert", "", 
                         "The photo you selected already exists in the following album: '" + a.getTitle() + 
                         "'. Proceeding will copy all photo data from that album to the current album.");
 
@@ -220,7 +250,7 @@ public class AlbumViewController {
                     if (confirmOptional.isPresent() && confirmOptional.get() == ButtonType.OK) {
                         album.getPhotos().add(photo);
                         // Save changes
-                        saveUser();
+                        parentController.saveUser();
                         populatePhotoTiles();
                         return;
                     } else {
@@ -251,12 +281,15 @@ public class AlbumViewController {
         album.getPhotos().add(newPhoto);
         
         // Save changes
-        saveUser();
+        parentController.saveUser();
         populatePhotoTiles();
     }
 
-
-
+    /**
+     * Opens the detailed photo view for the given photo.
+     *
+     * @param photo the {@link Photo} to display
+     */
     public void openPhoto(Photo photo) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/PhotoView.fxml"));
@@ -276,6 +309,11 @@ public class AlbumViewController {
         }
     }
 
+    /**
+     * Handles returning to the user home screen.
+     * <p>
+     * Loads the user home view and passes the current user data. 
+     */
     @FXML
     private void handleBackToHome() {
         try {
@@ -294,26 +332,13 @@ public class AlbumViewController {
         }
     }
 
-    // This method is called by PhotoCardController to remove a photo
+    /**
+     * Removes the given photo from the current album and saves the updated user data.
+     *
+     * @param photo the {@link Photo} to remove
+     */
     public void removePhoto(Photo photo) {
         album.getPhotos().remove(photo);
-        saveUser();
+        parentController.saveUser();
     }
-
-    // Save changes to the user object (which contains the album)
-    public void saveUser() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
-            oos.writeObject(user);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void showAlert(Alert alert, String title, String header, String content) {
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-    }
-
-
 }

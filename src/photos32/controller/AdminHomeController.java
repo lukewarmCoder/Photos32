@@ -42,6 +42,11 @@ public class AdminHomeController  {
         users = loadUsers();
     }
 
+    /**
+     * Toggles the visibility of the user list when the toggle button is clicked.
+     * <p>
+     * Updates the button text accordingly and either displays or clears the user list.
+     */
     @FXML
     private void handleToggleUsers() {
 
@@ -54,6 +59,9 @@ public class AdminHomeController  {
         }
     }
 
+    /**
+     * Displays the list of users in the UI by creating and adding user rows.
+     */
     private void showUsers() {
         userListContainer.getChildren().clear();
 
@@ -63,6 +71,12 @@ public class AdminHomeController  {
         }
     }
 
+    /**
+     * Creates a UI row for a given user, including a label and delete button.
+     *
+     * @param user the user to represent in the UI row
+     * @return a formatted {@link HBox} containing the user's info and a delete button
+     */
     private HBox createUserRow(User user) {
         HBox row = new HBox(10);
         row.setStyle("-fx-padding: 10; -fx-background-color: #FFFFFF; -fx-border-color: #CCCCCC; -fx-alignment: CENTER_LEFT;");
@@ -85,6 +99,13 @@ public class AdminHomeController  {
         return row;
     }
 
+    /**
+     * Loads user objects from the local "data/" directory.
+     * <p>
+     * Only files ending in ".dat" are considered valid user files.
+     *
+     * @return a list of {@link User} objects
+     */
     private List<User> loadUsers() {
         List<User> users = new ArrayList<>();
 
@@ -105,6 +126,13 @@ public class AdminHomeController  {
         return users;
     }
 
+    /**
+     * Handles deleting a user after confirmation.
+     * <p>
+     * Deletes the user's file, reloads the user list, and updates the UI if needed.
+     *
+     * @param user the {@link User} to delete
+     */
     private void handleDeleteUser(User user) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         showAlert(alert, "Confirmation", null, "Deleting this user will remove all of its data.");
@@ -126,35 +154,6 @@ public class AdminHomeController  {
                 if (toggleUsersButton.isSelected()) {
                     showUsers();
                 }
-
-                // // Delete the user file
-                // Files.deleteIfExists(userFile);
-
-                // // Create a list to collect nodes that should be removed
-                // List<Node> nodesToRemove = new ArrayList<>();
-
-                // // Iterate over the children and find the node to remove
-                // for (Node node : userListContainer.getChildren()) {
-                //     if (node instanceof HBox) {
-                //         HBox hbox = (HBox) node;
-                //         for (Node child : hbox.getChildren()) {
-                //             if (child instanceof Label) {
-                //                 Label label = (Label) child;
-                //                 if (label.getText().equals(user.getUsername())) {
-                //                     nodesToRemove.add(node);  // Add the node to the removal list
-                //                     break;  // Stop looking once the user is found
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
-
-                // // After the iteration, remove all collected nodes
-                // userListContainer.getChildren().removeAll(nodesToRemove);
-                
-                // // Remove the user from the UI
-                // List<User> users = loadUsers();
-                // users.remove(user);
                 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -162,7 +161,11 @@ public class AdminHomeController  {
         }
     }
 
-
+    /**
+     * Handles adding a new user via dialog input.
+     * <p>
+     * Prompts for username, validates input, checks for duplicates, and saves the new user.
+     */
     @FXML 
     private void handleAddUser() {
         boolean validInput = false;
@@ -214,6 +217,12 @@ public class AdminHomeController  {
         }
     }
 
+    /**
+     * Checks whether the given username is already in use.
+     *
+     * @param username the username to check
+     * @return true if the username already exists; false otherwise
+     */
     private boolean isDuplicateUser(String username) {
         for (User user : users) {
             if (user.getUsername().equals(username)) return true;
@@ -221,7 +230,11 @@ public class AdminHomeController  {
         return false;
     }
 
-
+    /**
+     * Handles the sign-out process with user confirmation.
+     * <p>
+     * If confirmed, it navigates the user back to the login screen.
+     */
     @FXML
     private void handleSignOut() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -242,6 +255,12 @@ public class AdminHomeController  {
         }
     }
 
+    /**
+     * Saves the current user data to a file.
+     * The user's data is serialized and stored in a file named after their username.
+     * 
+     * @throws IOException if an error occurs during file writing.
+     */
     private void saveUser(User user) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
             oos.writeObject(user);
@@ -250,6 +269,14 @@ public class AdminHomeController  {
         }
     }
 
+    /**
+     * Utility method to configure and display an alert dialog.
+     *
+     * @param alert   the {@link Alert} to display
+     * @param title   the title of the alert
+     * @param header  the optional header text
+     * @param content the content message of the alert
+     */
     private void showAlert(Alert alert, String title, String header, String content) {
         alert.setTitle(title);
         alert.setHeaderText(header);

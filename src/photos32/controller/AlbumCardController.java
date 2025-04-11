@@ -33,6 +33,11 @@ public class AlbumCardController {
         this.parentController = controller;
     }
     
+    /**
+     * Sets the album associated with this controller and updates the UI with its title, photo count, and date range.
+     *
+     * @param album the {@link Album} to display
+     */
     public void setAlbum(Album album) {
         this.album = album;
         albumTitle.setText(album.getTitle());
@@ -66,6 +71,11 @@ public class AlbumCardController {
         }
     }   
 
+    /**
+     * Initializes the album card controller.
+     * <p>
+     * Adds mouse click and hover effects to the album card UI component.
+     */
     @FXML
     public void initialize() {
         // Make the entire card clickable
@@ -93,10 +103,18 @@ public class AlbumCardController {
         });
     }
 
+    /**
+     * Handles the album card click event by opening the associated album.
+     */
     private void handleAlbumClick() {
         parentController.openAlbum(album);
     }
-    
+
+    /**
+     * Handles the "Rename Album" action.
+     * <p>
+     * Prompts the user for a new name, validates it, and updates the album title.
+     */
     @FXML
     public void handleRename() {
 
@@ -121,7 +139,7 @@ public class AlbumCardController {
             // Check if the title is empty
             if (newTitle.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                showAlert(alert, "Information", "Error: Invalid Album Name", 
+                parentController.showAlert(alert, "Information", "Error: Invalid Album Name", 
                         "Album names cannot be empty!");
                 alert.showAndWait();
                 continue; // Go back to the start of the loop
@@ -132,7 +150,7 @@ public class AlbumCardController {
                 // if (album.getTitle().equals(newTitle)) break;
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                showAlert(alert, "Information", "Error: Duplicate Album", 
+                parentController.showAlert(alert, "Information", "Error: Duplicate Album", 
                         "An album with that name already exists!");
                 alert.showAndWait();
                 continue; // Go back to the start of the loop
@@ -149,12 +167,17 @@ public class AlbumCardController {
         parentController.saveUser();
         parentController.populateAlbumTiles();
     }
-    
+
+    /**
+     * Handles the "Delete Album" action.
+     * <p>
+     * Prompts the user for confirmation and removes the album if confirmed.
+     */
     @FXML
     public void handleDelete() {
         // Create a confirmation alert before deleting the album
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        showAlert(alert, "Confirm Deletion", "Are you sure you want to delete this album?", 
+        parentController.showAlert(alert, "Confirm Deletion", "Are you sure you want to delete this album?", 
             "This action cannot be undone.");
 
         // Show the alert and wait for the user's response
@@ -168,7 +191,13 @@ public class AlbumCardController {
         // If the user cancels, nothing happens and the album is not deleted
     }
 
-    // Check for duplicate album titles
+    /**
+     * Checks if an album with the given title already exists for the user.
+     *
+     * @param user the {@link User} to check against
+     * @param title the album title to check
+     * @return true if a duplicate title exists, false otherwise
+     */
     private boolean isDuplicateAlbum(User user, String title) {
         for (Album album : user.getAlbums()) {
             if (album.getTitle().equalsIgnoreCase(title)) {
@@ -176,11 +205,5 @@ public class AlbumCardController {
             }
         }
         return false;
-    }
-
-    private void showAlert(Alert alert, String title, String header, String content) {
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
     }
 }
