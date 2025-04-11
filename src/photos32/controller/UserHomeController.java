@@ -23,6 +23,7 @@ import photos32.model.Album;
 import photos32.model.Photo;
 import photos32.model.TagType;
 import photos32.model.User;
+import photos32.service.DataStore;
 
 public class UserHomeController {
 
@@ -36,7 +37,6 @@ public class UserHomeController {
     @FXML private Button resetFilterButton;
 
     private User user;
-
     private FilterCriteria currentFilterCriteria;
 
 
@@ -133,7 +133,7 @@ public class UserHomeController {
         }
         
         createAlbum(user, title);
-        saveUser();
+        DataStore.saveUser(user);
         populateAlbumTiles();
     }
 
@@ -199,7 +199,7 @@ public class UserHomeController {
 
 
         // Creating a PhotoCard
-        List<Photo> searchResultPhotos = new ArrayList<>(); // Placeholder list to avoid errors
+        List<Photo> searchResultPhotos = new ArrayList<>(); 
         
         //Loop through albums and photos
         for (Album album : user.getAlbums()){
@@ -246,10 +246,12 @@ public class UserHomeController {
                     }
                 }
                 albumView.setUser(user);
+                albumView.setParentController(this);
     
                 PhotoCardController photoCardController = loader.getController();
                 photoCardController.setPhoto(photo);
                 photoCardController.setParentController(albumView); // Pass reference to parent
+                photoCardController.setIsSearchResult(true);
                 
                 // At this point, you can add the photo cards to the pop up window.
                 // photoContainer.getChildren().add(photoCard);
@@ -375,18 +377,6 @@ public class UserHomeController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    /**
-     * Saves the current user data to a file.
-     * The user's data is serialized and stored in a file named after their username.
-     */
-    public void saveUser() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
-            oos.writeObject(user);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

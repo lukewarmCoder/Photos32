@@ -2,8 +2,6 @@ package photos32.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +20,9 @@ import photos32.model.Album;
 import photos32.model.Photo;
 import photos32.model.Tag;
 import photos32.model.TagType;
+import photos32.model.User;
+import photos32.service.DataStore;
+import photos32.service.PhotoService;
 
 public class PhotoViewController {
 
@@ -35,7 +36,26 @@ public class PhotoViewController {
     @FXML private Button nextPhotoButton;
 
     private AlbumViewController parentController;
+    private boolean isSearchResult;
     private Photo photo;
+    private User user;
+
+    public void setParentController(AlbumViewController controller) {
+        this.parentController = controller;
+    }
+
+    public void setIsSearchResult(boolean isSearchResult) {
+        this.isSearchResult = isSearchResult;
+    }
+
+    public void setPhoto(Photo photo) {
+        this.photo = photo;
+        updateTagListView();
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     /**
      * Initializes the photo view.
@@ -77,15 +97,6 @@ public class PhotoViewController {
             cell.setContextMenu(contextMenu);
             return cell;
         });
-    }
-
-    public void setParentController(AlbumViewController controller) {
-        this.parentController = controller;
-    }
-
-    public void setPhoto(Photo photo) {
-        this.photo = photo;
-        updateTagListView();
     }
 
     /**
@@ -141,6 +152,28 @@ public class PhotoViewController {
     }
 
     /**
+     * Handles editing the photo caption via a dialog.
+     */
+    @FXML
+    private void handleEditCaption() {
+        // Dialog for editing caption
+        TextInputDialog dialog = new TextInputDialog(photo.getCaption());
+        dialog.setTitle("Edit Caption");
+        dialog.setHeaderText("Edit photo caption");
+        dialog.setContentText("Caption:");
+        
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String newCaption = result.get().trim();
+            photo.setCaption(newCaption);
+            updateCaptionDisplay();
+
+            // Save changes
+            DataStore.saveUser(user);
+        }
+    }
+
+    /**
      * Updates the caption label based on the photo's caption.
      */
     private void updateCaptionDisplay() {
@@ -152,32 +185,12 @@ public class PhotoViewController {
     }
 
     /**
-     * Handles editing the photo caption via a dialog.
-     */
-    @FXML
-    private void handleEditCaption() {
-        TextInputDialog dialog = new TextInputDialog(photo.getCaption());
-        dialog.setTitle("Edit Caption");
-        dialog.setHeaderText("Edit photo caption");
-        dialog.setContentText("Caption:");
-        
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            String newCaption = result.get().trim();
-            photo.setCaption(newCaption);
-            updateCaptionDisplay();
-            
-            // Save changes
-            parentController.getParentController().saveUser();
-        }
-    }
-
-    /**
      * Copies the photo to selected albums if not already present.
      */
     @FXML
     private void handlePhotoCopy() {
-        List<String> selectedAlbums = showAlbumSelectionDialog();
+        List<String> selectedAlbums = PhotoService.showAlbumSelectionDialog(
+            parentController.getUser().getAlbums(), parentController.getAlbum().getTitle());
         if (selectedAlbums.isEmpty()) return;
 
         // Make sure none of the selected albums already have the current photo in it.
@@ -200,7 +213,7 @@ public class PhotoViewController {
                 destAlbum.getPhotos().add(photo);
             }
         }
-        parentController.getParentController().saveUser();
+        DataStore.saveUser(parentController.getUser());
     }
 
     /**
@@ -208,7 +221,8 @@ public class PhotoViewController {
      */
     @FXML
     private void handlePhotoMove() {
-        List<String> selectedAlbums = showAlbumSelectionDialog();
+        List<String> selectedAlbums = PhotoService.showAlbumSelectionDialog(
+            parentController.getUser().getAlbums(), parentController.getAlbum().getTitle());
         if (selectedAlbums.isEmpty()) return;
 
         // Make sure none of the selected albums already have the current photo in it.
@@ -232,65 +246,15 @@ public class PhotoViewController {
             }
         }
         parentController.getAlbum().getPhotos().remove(photo);
-        parentController.getParentController().saveUser();
+        DataStore.saveUser(parentController.getUser());
         parentController.populatePhotoTiles();
 
-        handleBackToAlbumView();
-    }
-
-    /**
-     * Displays a dialog to allow selection of destination albums.
-     *
-     * @return list of selected album titles
-     */
-    private List<String> showAlbumSelectionDialog() {
-        Dialog<List<String>> dialog = createDialog();
-        Optional<List<String>> result = dialog.showAndWait();
-        return result.orElse(Collections.emptyList());
-    }
-
-    /**
-     * Creates the album selection dialog UI.
-     *
-     * @return the dialog instance
-     */
-    private Dialog<List<String>> createDialog() {
-        Dialog<List<String>> dialog = new Dialog<>();
-        dialog.setTitle("Select Destination Album(s)");
-    
-        ListView<String> albumListView = createAlbumListView();
-        dialog.getDialogPane().setContent(albumListView);
-    
-        dialog.getDialogPane().getButtonTypes().addAll(
-            new ButtonType("OK", ButtonBar.ButtonData.OK_DONE),
-            ButtonType.CANCEL
-        );
-    
-        dialog.setResultConverter(button -> {
-            if (button.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                return new ArrayList<>(albumListView.getSelectionModel().getSelectedItems());
-            }
-            return null;
-        });
-    
-        return dialog;
-    }
-
-    /**
-     * Creates the list view of albums for selection.
-     *
-     * @return {@link ListView} of album titles
-     */
-    private ListView<String> createAlbumListView() {
-        ListView<String> listView = new ListView<>();
-        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    
-        for (Album album : parentController.getUser().getAlbums()) {
-            if (!album.getTitle().equals(parentController.getAlbum().getTitle())) {
-                listView.getItems().add(album.getTitle());
-            }
+        if (isSearchResult) {
+            // handle back to search results
+        } else {
+            handleBackToAlbumView();
         }
-        return listView;
+        
     }
 
     /**
@@ -341,22 +305,26 @@ public class PhotoViewController {
      * Navigates to the previous photo in the album.
      */
     @FXML private void handlePreviousPhoto() {
-        if (parentController == null || parentController.getAlbum() == null) return;
+        if (isSearchResult) {
 
-        List<Photo> photos = parentController.getAlbum().getPhotos();
-        if (photos.isEmpty()) return;
+        } else {
+            if (parentController == null || parentController.getAlbum() == null) return;
 
-        // Find current photo's index
-        int currentIndex = photos.indexOf(photo);
-        
-        // Navigate to previous photo (wrapping around to the end if at the start)
-        int previousIndex = (currentIndex - 1 + photos.size()) % photos.size();
-        Photo previousPhoto = photos.get(previousIndex);
+            List<Photo> photos = parentController.getAlbum().getPhotos();
+            if (photos.isEmpty()) return;
 
-        // Update photo and display
-        this.photo = previousPhoto;
-        displayPhoto();
-        updateTagListView();
+            // Find current photo's index
+            int currentIndex = photos.indexOf(photo);
+            
+            // Navigate to previous photo (wrapping around to the end if at the start)
+            int previousIndex = (currentIndex - 1 + photos.size()) % photos.size();
+            Photo previousPhoto = photos.get(previousIndex);
+
+            // Update photo and display
+            this.photo = previousPhoto;
+            displayPhoto();
+            updateTagListView();
+        }
     }
 
     /**
@@ -364,22 +332,26 @@ public class PhotoViewController {
      */
     @FXML
     private void handleNextPhoto() {
-        if (parentController == null || parentController.getAlbum() == null) return;
+        if (isSearchResult) {
 
-        List<Photo> photos = parentController.getAlbum().getPhotos();
-        if (photos.isEmpty()) return;
+        } else {
+            if (parentController == null || parentController.getAlbum() == null) return;
 
-        // Find current photo's index
-        int currentIndex = photos.indexOf(photo);
-        
-        // Navigate to next photo (wrapping around to the start if at the end)
-        int nextIndex = (currentIndex + 1) % photos.size();
-        Photo nextPhoto = photos.get(nextIndex);
+            List<Photo> photos = parentController.getAlbum().getPhotos();
+            if (photos.isEmpty()) return;
 
-        // Update photo and display
-        this.photo = nextPhoto;
-        displayPhoto();
-        updateTagListView();
+            // Find current photo's index
+            int currentIndex = photos.indexOf(photo);
+            
+            // Navigate to next photo (wrapping around to the start if at the end)
+            int nextIndex = (currentIndex + 1) % photos.size();
+            Photo nextPhoto = photos.get(nextIndex);
+
+            // Update photo and display
+            this.photo = nextPhoto;
+            displayPhoto();
+            updateTagListView();
+        }
     }
 
     /**
@@ -389,9 +361,7 @@ public class PhotoViewController {
     private void handleAddTag() {
         List<TagType> existingTagTypes = parentController.getUser().getTagTypes();
         
-        Dialog<Tag> dialog = new Dialog<>();
-        dialog.setTitle("Add Tag");
-        dialog.setHeaderText("Select a Tag Type");
+        Dialog<Tag> dialog = createTagDialog();
     
         ButtonType addButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
@@ -509,7 +479,7 @@ public class PhotoViewController {
                 updateTagListView();
                 
                 // Save user data
-                parentController.getParentController().saveUser();
+                DataStore.saveUser(parentController.getUser());
             } catch (IllegalArgumentException e) {
                 // Show error alert
                 Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -521,6 +491,13 @@ public class PhotoViewController {
         });
     }
 
+    private Dialog<Tag> createTagDialog() {
+        Dialog<Tag> dialog = new Dialog<>();
+        dialog.setTitle("Add Tag");
+        dialog.setHeaderText("Select a Tag Type");
+        return dialog;
+    }
+
     private void removeTag(Tag tag) {
         if (photo != null) {
             // Remove the tag from the photo
@@ -528,7 +505,7 @@ public class PhotoViewController {
             
             // Update the ListView
             updateTagListView();
-            parentController.getParentController().saveUser();
+            DataStore.saveUser(parentController.getUser());
         }
     }
     

@@ -1,8 +1,6 @@
 package photos32.controller;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javafx.fxml.FXML;
@@ -16,6 +14,8 @@ import javafx.util.Duration;
 
 import photos32.model.Album;
 import photos32.model.Photo;
+import photos32.service.DataStore;
+import photos32.service.PhotoService;
 
 public class PhotoCardController {
 
@@ -25,6 +25,7 @@ public class PhotoCardController {
     @FXML private Label caption;
 
     private AlbumViewController parentController;
+    private boolean isSearchResult;
     private Photo photo;
 
     /**
@@ -61,11 +62,14 @@ public class PhotoCardController {
         // Make the thumbnail and card clickable to view photo
         thumbnail.setOnMouseClicked(event -> handleViewPhoto());
         caption.setOnMouseClicked(event -> handleViewPhoto());
-        // dateTimeLabel.setOnMouseClicked(event -> handleViewPhoto());
     }
 
     public void setParentController(AlbumViewController controller) {
         this.parentController = controller;
+    }
+
+    public void setIsSearchResult(boolean isSearchResult) {
+        this.isSearchResult = isSearchResult;
     }
 
     /**
@@ -137,7 +141,7 @@ public class PhotoCardController {
      */
     @FXML
     private void handleViewPhoto() {
-        parentController.openPhoto(photo);
+        parentController.openPhoto(photo, isSearchResult);
     }
 
     /**
@@ -153,11 +157,23 @@ public class PhotoCardController {
         
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
-            photo.setCaption(result.get().trim());
-            caption.setText(photo.getCaption().isEmpty() ? "No caption" : photo.getCaption());
-            
+            String newCaption = result.get().trim();
+            photo.setCaption(newCaption);
+            updateCaptionDisplay();
+
             // Save changes
-            parentController.getParentController().saveUser();
+            DataStore.saveUser(parentController.getUser());
+        }
+    }
+
+    /**
+     * Updates the caption label based on the photo's caption.
+     */
+    private void updateCaptionDisplay() {
+        if (photo.getCaption() != null && !photo.getCaption().isEmpty()) {
+            caption.setText(photo.getCaption());
+        } else {
+            caption.setText("No caption");
         }
     }
 
@@ -166,7 +182,8 @@ public class PhotoCardController {
      */
     @FXML
     private void handlePhotoCopy() {
-        List<String> selectedAlbums = showAlbumSelectionDialog();
+        List<String> selectedAlbums = PhotoService.showAlbumSelectionDialog(
+            parentController.getUser().getAlbums(), parentController.getAlbum().getTitle());
         if (selectedAlbums.isEmpty()) return;
 
         // Make sure none of the selected albums already have the current photo in it.
@@ -189,7 +206,7 @@ public class PhotoCardController {
                 destAlbum.getPhotos().add(photo);
             }
         }
-        parentController.getParentController().saveUser();
+        DataStore.saveUser(parentController.getUser());
     }
 
     /**
@@ -197,7 +214,8 @@ public class PhotoCardController {
      */
     @FXML
     public void handlePhotoMove() {
-        List<String> selectedAlbums = showAlbumSelectionDialog();
+        List<String> selectedAlbums = PhotoService.showAlbumSelectionDialog(
+            parentController.getUser().getAlbums(), parentController.getAlbum().getTitle());
         if (selectedAlbums.isEmpty()) return;
 
         // Make sure none of the selected albums already have the current photo in it.
@@ -221,65 +239,10 @@ public class PhotoCardController {
             }
         }
         parentController.getAlbum().getPhotos().remove(photo);
-        parentController.getParentController().saveUser();
+        DataStore.saveUser(parentController.getUser());
         parentController.populatePhotoTiles();
     }
 
-    /**
-     * Displays a dialog to select one or more destination albums.
-     *
-     * @return a list of selected album titles, or an empty list if none selected
-     */
-    private List<String> showAlbumSelectionDialog() {
-        Dialog<List<String>> dialog = createDialog();
-        Optional<List<String>> result = dialog.showAndWait();
-        return result.orElse(Collections.emptyList());
-    }
-
-    /**
-     * Creates the album selection dialog.
-     *
-     * @return the dialog instance
-     */
-    private Dialog<List<String>> createDialog() {
-        Dialog<List<String>> dialog = new Dialog<>();
-        dialog.setTitle("Select Destination Album(s)");
-    
-        ListView<String> albumListView = createAlbumListView();
-        dialog.getDialogPane().setContent(albumListView);
-    
-        dialog.getDialogPane().getButtonTypes().addAll(
-            new ButtonType("OK", ButtonBar.ButtonData.OK_DONE),
-            ButtonType.CANCEL
-        );
-    
-        dialog.setResultConverter(button -> {
-            if (button.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                return new ArrayList<>(albumListView.getSelectionModel().getSelectedItems());
-            }
-            return null;
-        });
-    
-        return dialog;
-    }
-
-    /**
-     * Creates a list view of albums to display in the album selection dialog.
-     *
-     * @return the {@link ListView} of album titles
-     */
-    private ListView<String> createAlbumListView() {
-        ListView<String> listView = new ListView<>();
-        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    
-        for (Album album : parentController.getUser().getAlbums()) {
-            if (!album.getTitle().equals(parentController.getAlbum().getTitle())) {
-                listView.getItems().add(album.getTitle());
-            }
-        }
-    
-        return listView;
-    }
 
     /**
      * Handles deletion of the photo after user confirmation.
@@ -299,9 +262,5 @@ public class PhotoCardController {
             // Update UI (handled by AlbumViewController)
             parentController.populatePhotoTiles();
         }
-    }
-
-    public void deletePhoto() {
-        
     }
 }

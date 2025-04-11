@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import photos32.model.User;
+import photos32.service.DataStore;
 
 public class LoginController {
 
@@ -75,42 +76,16 @@ public class LoginController {
      */
     private User getOrCreateUser(String username) {
         try {
-            User user = loadUser(username);
+            User user = DataStore.loadUser(username);
             if (user == null) {
                 // If the user does not exist, we create a new user
                 user = new User(username);
-                saveUser(user);
+                DataStore.saveUser(user);
             }
             return user;
         } catch (Exception e) {
             e.printStackTrace();
             return new User(username); // Fallback
-        }
-    }
-
-    /**
-     * Loads a user object from disk if it exists.
-     *
-     * @param username the username of the user to load
-     * @return the loaded {@link User} object, or null if not found
-     * @throws IOException            if an I/O error occurs
-     * @throws ClassNotFoundException if the class of the serialized object cannot be found
-     */
-    private User loadUser(String username) throws IOException, ClassNotFoundException {
-        File userFile = new File("data/" + username + ".dat");
-        if (userFile.exists()) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userFile))) {
-                return (User)ois.readObject();
-            }
-        }
-        return null; // User doesn't exist 
-    }
-
-    private void saveUser(User user) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data/" + user.getUsername() + ".dat"))) {
-            oos.writeObject(user);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

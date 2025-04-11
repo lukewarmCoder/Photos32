@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import photos32.model.Album;
 import photos32.model.Photo;
 import photos32.model.User;
+import photos32.service.DataStore;
 
 public class AlbumViewController {
 
@@ -250,7 +251,7 @@ public class AlbumViewController {
                     if (confirmOptional.isPresent() && confirmOptional.get() == ButtonType.OK) {
                         album.getPhotos().add(photo);
                         // Save changes
-                        parentController.saveUser();
+                        DataStore.saveUser(user);
                         populatePhotoTiles();
                         return;
                     } else {
@@ -281,7 +282,7 @@ public class AlbumViewController {
         album.getPhotos().add(newPhoto);
         
         // Save changes
-        parentController.saveUser();
+        DataStore.saveUser(user);
         populatePhotoTiles();
     }
 
@@ -290,7 +291,7 @@ public class AlbumViewController {
      *
      * @param photo the {@link Photo} to display
      */
-    public void openPhoto(Photo photo) {
+    public void openPhoto(Photo photo, boolean isSearchResult) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/PhotoView.fxml"));
             Scene scene = new Scene(loader.load());
@@ -298,6 +299,12 @@ public class AlbumViewController {
             PhotoViewController controller = loader.getController();
             controller.setParentController(this);
             controller.setPhoto(photo);
+            controller.setUser(user);
+            if (isSearchResult) {
+                controller.setIsSearchResult(true);
+            } else {
+                controller.setIsSearchResult(false);
+            }
             controller.displayPhoto();
 
             // Display the scene
@@ -308,6 +315,8 @@ public class AlbumViewController {
             e.printStackTrace();
         }
     }
+
+
 
     /**
      * Handles returning to the user home screen.
@@ -339,6 +348,6 @@ public class AlbumViewController {
      */
     public void removePhoto(Photo photo) {
         album.getPhotos().remove(photo);
-        parentController.saveUser();
+        DataStore.saveUser(user);
     }
 }

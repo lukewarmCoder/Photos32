@@ -8,6 +8,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
 
 import photos32.model.User;
+import photos32.service.DataStore;
 import photos32.model.Album;
 import photos32.model.Photo;
 import javafx.animation.ScaleTransition;
@@ -164,7 +165,7 @@ public class AlbumCardController {
         album.setTitle(newTitle);
         albumTitle.setText(newTitle);
         
-        parentController.saveUser();
+        DataStore.saveUser(parentController.getUser());
         parentController.populateAlbumTiles();
     }
 
@@ -185,7 +186,7 @@ public class AlbumCardController {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             // If the user confirms, proceed with deletion
             parentController.getUser().getAlbums().remove(album);
-            parentController.saveUser();
+            DataStore.saveUser(parentController.getUser());
             parentController.populateAlbumTiles();
         }
         // If the user cancels, nothing happens and the album is not deleted
