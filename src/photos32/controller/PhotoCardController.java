@@ -261,6 +261,10 @@ public class PhotoCardController {
             
             // Update UI (handled by AlbumViewController)
             parentController.populatePhotoTiles();
+
+            if (isSearchResult) {
+                parentController.getSearchResultsController().populatePhotoTiles();
+            }
         }
     }
 }

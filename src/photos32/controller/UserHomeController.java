@@ -184,7 +184,6 @@ public class UserHomeController {
         }
     }
 
-
     @FXML
     private void handleSearch() {
 
@@ -252,7 +251,6 @@ public class UserHomeController {
                 PhotoCardController photoCardController = loader.getController();
                 photoCardController.setPhoto(photo);
                 photoCardController.setParentController(albumView); // Pass reference to parent
-                photoCardController.setIsSearchResult(true);
                 
                 // At this point, you can add the photo cards to the pop up window.
                 // photoContainer.getChildren().add(photoCard);
@@ -274,6 +272,28 @@ public class UserHomeController {
                 e.printStackTrace();
             }
         }
+
+        // try {
+        //     FXMLLoader loader = 
+        //         new FXMLLoader(getClass().getResource("/photos32/view/SearchResultsPopup.fxml"));
+        //     Parent root = loader.load();
+
+        //     SearchResultsPopupController controller = loader.getController();
+        //     controller.setSearchResults(searchresults);
+        //     controller.setParentController(this);
+
+        //     Stage stage = new Stage();
+        //     stage.initModality(Modality.WINDOW_MODAL);
+        //     stage.initOwner(albumContainer.getScene().getWindow());
+        //     stage.setTitle("Search Results");
+        //     stage.setScene(new Scene(root));
+        //     stage.show();
+
+        //     controller.populatePhotoTiles();
+
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
     }
 
     /**

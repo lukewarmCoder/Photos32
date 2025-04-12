@@ -27,9 +27,16 @@ public class AlbumViewController {
     @FXML private Label albumViewHeader;
     @FXML private Button backButton;
 
+    @FXML private FlowPane photoFlowPane;
+
+    private SearchResultsPopupController searchController;
     private UserHomeController parentController;
     private Album album;
     private User user;
+
+    public void setSearchController(SearchResultsPopupController searchController) {
+        this.searchController = searchController;
+    }
 
     public void setParentController(UserHomeController parentController) {
         this.parentController = parentController;
@@ -41,6 +48,10 @@ public class AlbumViewController {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public void setSearchResultFlowPane(FlowPane photoFlowPane) {
+        this.photoFlowPane = photoFlowPane;
     }
 
     public UserHomeController getParentController() {
@@ -55,11 +66,15 @@ public class AlbumViewController {
         return album;
     }
 
+    public SearchResultsPopupController getSearchResultsController() {
+        return searchController;
+    }
+
     public void setHeader() {
         albumViewHeader.setText(album.getTitle());
     }
 
-   /**
+    /**
      * Populates the photo container with photo tiles representing each photo in the current album.
      * <p>
      * Loads FXML components for each photo and sets their corresponding data and parent controller reference.
@@ -308,10 +323,17 @@ public class AlbumViewController {
             }
             controller.displayPhoto();
 
-            // Display the scene
-            Stage stage = (Stage)photoContainer.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Photo32");
+            if (isSearchResult) {
+                Stage stage = (Stage)photoFlowPane.getScene().getWindow();
+                stage.setScene(scene);
+                stage.setTitle("Photo32");
+            } else {
+                // Display the scene
+                Stage stage = (Stage)photoContainer.getScene().getWindow();
+                stage.setScene(scene);
+                stage.setTitle("Photo32");
+            }
+        
         } catch (IOException e) {
             e.printStackTrace();
         }

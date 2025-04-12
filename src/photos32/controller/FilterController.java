@@ -11,8 +11,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -171,39 +169,6 @@ public class FilterController {
         
         // Close the window
         stage.close();
-    }
-
-    /**
-     * Validates the date input for a DatePicker to ensure it matches the expected MM-DD-YYYY format.
-     * <p>
-     * If the input is valid, the DatePicker will be updated with the parsed date.
-     * If the input is invalid, it will be rejected and the method returns false.
-     *
-     * @param datePicker the DatePicker to validate
-     * @return true if the input date is valid, false otherwise
-     */
-    private boolean isValidDate(DatePicker datePicker) {
-        String inputText = datePicker.getEditor().getText().trim();
-
-        if (inputText.isEmpty()) {
-            return true; // Allow empty dates
-        }
-
-        // Ensure the input matches MM-DD-YYYY format strictly before parsing
-        if (!inputText.matches("\\d{2}-\\d{2}-\\d{4}")) {
-            return false; // Immediately reject invalid formats
-        }
-
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
-            LocalDate parsedDate = LocalDate.parse(inputText, formatter);
-
-            // Set the parsed date back to the DatePicker for consistency
-            datePicker.setValue(parsedDate);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
-        }
     }
 
     // Inner class to hold filter criteria

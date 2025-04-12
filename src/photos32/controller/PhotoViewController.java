@@ -47,6 +47,10 @@ public class PhotoViewController {
 
     public void setIsSearchResult(boolean isSearchResult) {
         this.isSearchResult = isSearchResult;
+        if (isSearchResult) {
+            nextPhotoButton.setVisible(false);
+            previousPhotoButton.setVisible(false);
+        }
     }
 
     public void setPhoto(Photo photo) {
@@ -98,11 +102,6 @@ public class PhotoViewController {
             cell.setContextMenu(contextMenu);
             return cell;
         });
-
-        if (isSearchResult) {
-            nextPhotoButton.setVisible(false);
-            previousPhotoButton.setVisible(false);
-        }
     }
 
     /**
@@ -301,27 +300,48 @@ public class PhotoViewController {
      */
     @FXML
     private void handleBackToAlbumView() {
+        if (isSearchResult) {
+            handleBackToSearchResults();
+        } else {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/AlbumView.fxml"));
+                Scene scene = new Scene(loader.load());
 
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/AlbumView.fxml"));
-            Scene scene = new Scene(loader.load());
+                AlbumViewController controller = loader.getController();
+                controller.setAlbum(parentController.getAlbum());
+                controller.setUser(user);
+                controller.setHeader();
+                controller.populatePhotoTiles();
 
-            AlbumViewController controller = loader.getController();
-            controller.setAlbum(parentController.getAlbum());
-            controller.setUser(user);
-            controller.setHeader();
-            controller.populatePhotoTiles();
-
-            Stage stage = (Stage)backButton.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Photo32");
-        } catch (IOException e) {
-            e.printStackTrace();
+                Stage stage = (Stage)backButton.getScene().getWindow();
+                stage.setScene(scene);
+                stage.setTitle("Photo32");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void handleBackToSearchResults() {
+        try {
+            FXMLLoader loader = new
+                FXMLLoader(getClass().getResource("/photos32/view/SearchResults.fxml"));
+            Scene scene = new Scene(loader.load());
 
+            SearchResultsPopupController controller = loader.getController();
+            controller.setSearchResults(user.getAlbums().get(0).getPhotos());
+            controller.setParentController(parentController.getParentController());
+
+            Stage stage = (Stage)backButton.getScene().getWindow();
+            stage.setTitle("Search Results");
+            stage.setScene(scene);
+            stage.show();
+
+            controller.populatePhotoTiles();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
