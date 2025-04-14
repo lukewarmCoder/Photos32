@@ -77,6 +77,8 @@ Before running this project, make sure you have the following installed:
     cd Photos32
     ```
 
+    **Note:** If the PAT method doesn't work, you can always just download the Zip file manually. Just be sure to rename the extracted folder from "Photos32-main" to "Photos32".
+
 ### Step 2: Set the path to your JavaFX SDK
 
 1. Identify the path to the lib/ folder inside the JavaFX SDK.
