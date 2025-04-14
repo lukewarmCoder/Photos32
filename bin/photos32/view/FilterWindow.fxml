@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" 
+      prefHeight="400.0" prefWidth="500.0" spacing="15.0" xmlns="http://javafx.com/javafx/19" 
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="photos32.controller.FilterController">
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+   <children>
+      <VBox spacing="10.0">
+         <children>
+            <Label text="Filter by Tags" />
+            <VBox fx:id="tagFiltersContainer" spacing="8.0">
+               <children>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <ComboBox fx:id="tagName1" prefWidth="150.0" promptText="Select Tag Name" />
+                        <TextField fx:id="tagValue1" onAction="#onTagValueEntered" prefWidth="200.0" promptText="Enter Tag Value" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <ComboBox fx:id="logicalOperator" prefWidth="100.0" promptText="Operator">
+                           <HBox.margin>
+                              <Insets left="30.0" />
+                           </HBox.margin>
+                        </ComboBox>
+                        <VBox fx:id="additionalTagContainer" managed="false" visible="false" VBox.vgrow="NEVER">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <ComboBox fx:id="tagName2" prefWidth="150.0" promptText="Select Tag Name" />
+                                    <TextField fx:id="tagValue2" onAction="#onTagValueEntered" prefWidth="200.0" promptText="Enter Tag Value" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+      
+      <Separator />
+      
+      <VBox spacing="10.0">
+         <children>
+            <Label text="Filter by Date Range" />
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+               <children>
+                  <Label text="From:" />
+                  <DatePicker fx:id="startDate" promptText="Start Date" />
+                  <Label text="To:" />
+                  <DatePicker fx:id="endDate" promptText="End Date" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      
+      <Separator />
+      
+      <HBox alignment="CENTER_RIGHT" spacing="10.0">
+         <children>
+            <Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
+            <Button fx:id="applyButton" defaultButton="true" mnemonicParsing="false" text="Apply Filters" />
+         </children>
+      </HBox>
+   </children>
+</VBox>
