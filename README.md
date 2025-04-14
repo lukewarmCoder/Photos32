@@ -7,7 +7,6 @@ Photos32/
 |── bin/
 |── data/
 |── docs/
-│── resources/
 │── src/
 │   └── photos32/
 │       ├── model/
