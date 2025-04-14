@@ -7,6 +7,7 @@ Photos32/
 |── bin/
 |── data/
 |── docs/
+│── resources/
 │── src/
 │   └── photos32/
 │       ├── model/
@@ -23,6 +24,7 @@ Photos32/
 │       │   ├── Login.fxml
 │       │   ├── PhotoCard.fxml
 │       │   ├── PhotoView.fxml
+│       │   ├── SearchResults.fxml
 │       │   └── UserHome.fxml
 │       ├── controller/
 │       │   ├── AdminHomeController.java
@@ -32,7 +34,12 @@ Photos32/
 │       │   ├── LoginController.java
 │       │   ├── PhotoCardController.java
 │       │   ├── PhotoViewController.java
+│       │   ├── SearchResultsController.java
 │       │   └── UserHomeController.java
+│       ├── service/
+│       │   ├── AlertUtil.java
+│       │   ├── DataStore.java
+│       │   └── PhotoService.java
 │       └── Photos.java
 │── .gitignore
 |── README.md

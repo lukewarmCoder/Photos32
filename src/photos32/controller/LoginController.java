@@ -10,6 +10,11 @@ import javafx.stage.Stage;
 import photos32.model.User;
 import photos32.service.DataStore;
 
+/**
+ * Controller class for the login screen.
+ * Handles the loading of individual users, as well as the admin.
+ * Connected to Login.fxml.
+ */
 public class LoginController {
 
     @FXML private TextField usernameField;
@@ -65,7 +70,7 @@ public class LoginController {
 
         Stage stage = (Stage)usernameField.getScene().getWindow();
         stage.setScene(scene);
-        stage.setTitle("Photo 32");
+        stage.setTitle("Photos32");
     }
 
     /**

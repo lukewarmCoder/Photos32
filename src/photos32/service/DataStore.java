@@ -7,10 +7,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-// Removed unused import for ErrorHandler
-
 import photos32.model.User;
 
+/**
+ * Service class for storing user data.
+ */
 public class DataStore {
     private static final String DATA_DIR = "data/";
 

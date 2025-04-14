@@ -12,6 +12,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import photos32.model.Album;
 
+/**
+ * Service class for photo functionality.
+ */
 public class PhotoService {
 
     /**

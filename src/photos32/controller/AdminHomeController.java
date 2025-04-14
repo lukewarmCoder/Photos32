@@ -28,7 +28,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import photos32.model.User;
+import photos32.service.AlertUtil;
 
+/**
+ * Controller class for the admin view.
+ * Handles UI interactions related to manipulating users.
+ * Connected to AdminHome.fxml.
+ */
 public class AdminHomeController  {
 
     @FXML private Button signOutButton;
@@ -37,6 +43,9 @@ public class AdminHomeController  {
 
     private List<User> users;
 
+    /**
+     * When the controller is initialized, immediately reference all users from memory.
+     */
     @FXML
     public void initialize() {
         users = loadUsers();
@@ -135,7 +144,7 @@ public class AdminHomeController  {
      */
     private void handleDeleteUser(User user) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        showAlert(alert, "Confirmation", null, "Deleting this user will remove all of its data.");
+        AlertUtil.showAlert(alert, "Confirmation", null, "Deleting this user will remove all of its data.");
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -189,7 +198,7 @@ public class AdminHomeController  {
             // Check if the username is empty
             if (username.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                showAlert(alert, "Information", "Error: Invalid Username", 
+                AlertUtil.showAlert(alert, "Information", "Error: Invalid Username", 
                         "Usernames cannot be empty!");
                 alert.showAndWait();
                 continue; // Go back to the start of the loop
@@ -198,7 +207,7 @@ public class AdminHomeController  {
             // Check for duplicate titles
             if (isDuplicateUser(username)) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                showAlert(alert, "Information", "Error: Duplicate User", 
+                AlertUtil.showAlert(alert, "Information", "Error: Duplicate User", 
                         "That username is taken!");
                 alert.showAndWait();
                 continue; // Go back to the start of the loop
@@ -238,7 +247,7 @@ public class AdminHomeController  {
     @FXML
     private void handleSignOut() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        showAlert(alert, "Confirmation", null, "Are you sure you want to sign out?");
+        AlertUtil.showAlert(alert, "Confirmation", null, "Are you sure you want to sign out?");
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -248,7 +257,7 @@ public class AdminHomeController  {
 
                 Stage stage = (Stage)signOutButton.getScene().getWindow();
                 stage.setScene(scene);
-                stage.setTitle("Photo32 Login");
+                stage.setTitle("Photos32 Login");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -267,19 +276,5 @@ public class AdminHomeController  {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Utility method to configure and display an alert dialog.
-     *
-     * @param alert   the {@link Alert} to display
-     * @param title   the title of the alert
-     * @param header  the optional header text
-     * @param content the content message of the alert
-     */
-    private void showAlert(Alert alert, String title, String header, String content) {
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
     }
 }

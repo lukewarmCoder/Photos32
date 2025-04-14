@@ -21,6 +21,11 @@ import photos32.model.User;
 import photos32.service.AlertUtil;
 import photos32.service.DataStore;
 
+/**
+ * Controller class for the album view.
+ * Handles UI interactions related to displaying and maniulating photos in an album.
+ * Connected to AlbumView.fxml.
+ */
 public class AlbumViewController {
 
     @FXML private FlowPane photoContainer;
@@ -34,42 +39,90 @@ public class AlbumViewController {
     private Album album;
     private User user;
 
+    /**
+     * Sets the SearchResultsController reference for this view.
+     * 
+     * @param searchController the SearchResultsController to associate with this view
+     */
     public void setSearchController(SearchResultsPopupController searchController) {
         this.searchController = searchController;
     }
 
+    /**
+     * Sets the parent UserHomeController for this view.
+     * 
+     * @param parentController the parent UserHomeController
+     */
     public void setParentController(UserHomeController parentController) {
         this.parentController = parentController;
     }
 
+    /**
+     * Sets the album whose photos are being viewed.
+     * 
+     * @param album the Album to display
+     */
     public void setAlbum(Album album) {
         this.album = album;
     }
 
+    /**
+     * Sets the user who owns the album.
+     * 
+     * @param user the User who owns the album
+     */
     public void setUser(User user) {
         this.user = user;
     }
 
+     /**
+     * Sets the FlowPane that holds the search result photos.
+     * 
+     * @param photoFlowPane the FlowPane for displaying search results
+     */
     public void setSearchResultFlowPane(FlowPane photoFlowPane) {
         this.photoFlowPane = photoFlowPane;
     }
 
+    /**
+     * Returns the parent UserHomeController.
+     * 
+     * @return the parent UserHomeController
+     */
     public UserHomeController getParentController() {
         return parentController;
     }
 
+    /**
+     * Returns the current user.
+     * 
+     * @return the User associated with this view
+     */
     public User getUser() {
         return user;
     }
 
+    /**
+     * Returns the album currently being viewed.
+     * 
+     * @return the Album being displayed
+     */
     public Album getAlbum() {
         return album;
     }
 
+    /**
+     * Returns the SearchResultsController associated with this view.
+     * 
+     * @return the SearchResultsController
+     */
     public SearchResultsPopupController getSearchResultsController() {
         return searchController;
     }
 
+    /**
+     * Sets the album title as the header label text.
+     */
     public void setHeader() {
         albumViewHeader.setText(album.getTitle());
     }
@@ -136,7 +189,7 @@ public class AlbumViewController {
      */
     private void handleStockPhotoSelection() {
         // Define your stock photos directory
-        String stockPhotosDir = "resources/"; // Adjust this path to your project structure
+        String stockPhotosDir = "data/stockphotos/"; // Adjust this path to your project structure
         File stockDir = new File(stockPhotosDir);
         
         // Get list of stock photos
@@ -306,6 +359,7 @@ public class AlbumViewController {
      * Opens the detailed photo view for the given photo.
      *
      * @param photo the {@link Photo} to display
+     * @param isSearchResult indicates if the album is currently associated with a search result
      */
     public void openPhoto(Photo photo, boolean isSearchResult) {
         try {
@@ -326,20 +380,18 @@ public class AlbumViewController {
             if (isSearchResult) {
                 Stage stage = (Stage)photoFlowPane.getScene().getWindow();
                 stage.setScene(scene);
-                stage.setTitle("Photo32");
+                stage.setTitle("Photos32");
             } else {
                 // Display the scene
                 Stage stage = (Stage)photoContainer.getScene().getWindow();
                 stage.setScene(scene);
-                stage.setTitle("Photo32");
+                stage.setTitle("Photos32");
             }
         
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
 
     /**
      * Handles returning to the user home screen.
@@ -358,7 +410,7 @@ public class AlbumViewController {
 
             Stage stage = (Stage)backButton.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Photo32");
+            stage.setTitle("Photos32");
         } catch (IOException e) {
             e.printStackTrace();
         }

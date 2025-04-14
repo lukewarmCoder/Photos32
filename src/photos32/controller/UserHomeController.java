@@ -1,6 +1,7 @@
 package photos32.controller;
 
 import java.io.*;
+import java.time.LocalDate;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,24 +9,31 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import photos32.controller.FilterController.FilterCriteria;
 import photos32.controller.FilterController.TagFilter;
 import photos32.model.Album;
 import photos32.model.Photo;
+import photos32.model.Tag;
 import photos32.model.TagType;
 import photos32.model.User;
 import photos32.service.AlertUtil;
 import photos32.service.DataStore;
 
+/**
+ * Controller class for the user home screen.
+ * Handles UI interactions related to album management, searching, and filtering photos.
+ * Connected to UserHome.fxml.
+ */
 public class UserHomeController {
 
     @FXML private Label userHomeHeader;
@@ -40,20 +48,41 @@ public class UserHomeController {
     private User user;
     private FilterCriteria currentFilterCriteria;
 
-
+    /**
+     * Sets the header label on the user home screen to display a welcome message
+     * using the provided user's username.
+     *
+     * @param user The user whose username will be displayed in the header.
+     */
     public void setHeader(User user) {
         userHomeHeader.setText("Welcome, " + user.getUsername());
     }
 
+    /**
+     * Sets the current user for this controller and populates the album tiles
+     * with that user's albums.
+     *
+     * @param user The user to associate with this controller.
+     */
     public void setUser(User user) {
         this.user = user;
         populateAlbumTiles();
     }
 
+    /**
+     * Returns the user associated with this controller.
+     *
+     * @return The current user.
+     */
     public User getUser() {
         return user;
     } 
 
+    /**
+     * Returns the currently applied filter criteria for searching or filtering photos.
+     *
+     * @return The current {@link FilterCriteria} object, or null if no filters are applied.
+     */
     public FilterCriteria getCurrentFilterCriteria() {
         return currentFilterCriteria;
     }
@@ -86,8 +115,6 @@ public class UserHomeController {
     /**
      * Displays a dialog for user input, validates the album title,
      * and creates a new album if valid.
-     * 
-     * This method is triggered by an FXML button event.
      */
     @FXML
     private void handleCreateAlbum() {
@@ -138,7 +165,13 @@ public class UserHomeController {
         populateAlbumTiles();
     }
 
-    // Check for duplicate album titles
+    /**
+     * Finds duplicate albums.
+     * 
+     * @param user
+     * @param title
+     * @return true if an album with the same name already exists, false otherwise.
+     */
     private boolean isDuplicateAlbum(User user, String title) {
         for (Album album : user.getAlbums()) {
             if (album.getTitle().equalsIgnoreCase(title)) {
@@ -148,6 +181,11 @@ public class UserHomeController {
         return false;
     }
 
+    /**
+     * Instantiates a new album and adds it the user's list
+     * @param user
+     * @param title
+     */
     private void createAlbum(User user, String title) {
         Album newAlbum = new Album(title);
         user.getAlbums().add(newAlbum);
@@ -178,122 +216,249 @@ public class UserHomeController {
             // Display the scene
             Stage stage = (Stage)albumContainer.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Photo32");
+            stage.setTitle("Photos32");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Filters the list of photos based on search text, tag filters, and date range filters.
+     * 
+     * @return a list of photos that match the given search criteria
+     */
+    private List<Photo> filterPhotos() {
+
+        List<Photo> searchResults = new ArrayList<>();
+        List<Photo> allPhotos = user.getAllPhotos();
+        
+        // If no search text and no filter criteria, return all photos
+        if ((searchField.getText() == null || searchField.getText().trim().isEmpty()) && 
+            isFilterCriteriaEmpty(currentFilterCriteria)) {
+            return allPhotos;
+        }
+        
+        // First filter by caption if search field has text
+        List<Photo> captionFilteredPhotos = new ArrayList<>();
+        if (searchField.getText() != null && !searchField.getText().trim().isEmpty()) {
+            String searchText = searchField.getText().toLowerCase().trim();
+            for (Photo photo : allPhotos) {
+                if (photo.getCaption() != null && photo.getCaption().toLowerCase().contains(searchText)) {
+                    captionFilteredPhotos.add(photo);
+                }
+            }
+        } else {
+            // If no search text, start with all photos
+            captionFilteredPhotos.addAll(allPhotos);
+        }
+        
+        // No filter criteria, just return caption-filtered results
+        if (isFilterCriteriaEmpty(currentFilterCriteria)) {
+            System.out.println("no filter criteria, return caption results");
+            return captionFilteredPhotos;
+        }
+        
+        // Apply tag filters
+        List<TagFilter> tagFilters = currentFilterCriteria.getTagFilters();
+        boolean hasTagFilters = tagFilters != null && !tagFilters.isEmpty() && 
+                            tagFilters.stream().anyMatch(tf -> tf.getValue() != null && !tf.getValue().isEmpty());
+        
+        // Apply date range filters
+        LocalDate startDate = currentFilterCriteria.getStartDate();
+        LocalDate endDate = currentFilterCriteria.getEndDate();
+        boolean hasDateFilter = startDate != null || endDate != null;
+
+        // If there are no tag filters, only apply date filter
+        if (!hasTagFilters && hasDateFilter) {
+            for (Photo photo : captionFilteredPhotos) {
+                if (isWithinDateRange(photo, startDate, endDate)) {
+                    searchResults.add(photo);
+                }
+            }
+            return searchResults;
+        }
+        
+        // If there are no date filters, only apply tag filters
+        if (hasTagFilters && !hasDateFilter) {
+            System.out.println("only searching by tag");
+            return applyTagFilters(captionFilteredPhotos, tagFilters, currentFilterCriteria.getLogicalOperator());
+        }
+        
+        // Apply both tag filters and date filter
+        List<Photo> tagFilteredPhotos = applyTagFilters(captionFilteredPhotos, tagFilters, currentFilterCriteria.getLogicalOperator());
+        
+        for (Photo photo : tagFilteredPhotos) {
+            if (isWithinDateRange(photo, startDate, endDate)) {
+                searchResults.add(photo);
+            }
+        }
+        
+        return searchResults;
+    }
+
+    /**
+     * Checks whether the provided filter criteria object is empty.
+     * A filter is considered empty if it has no tag filters or date range filters set.
+     * 
+     * @param criteria the filter criteria to check
+     * @return true if the filter criteria is empty; false otherwise
+     */
+    private boolean isFilterCriteriaEmpty(FilterCriteria criteria) {
+        if (criteria == null) return true;
+        
+        // Check tag filters
+        List<TagFilter> tagFilters = criteria.getTagFilters();
+        boolean hasTagFilters = tagFilters != null && !tagFilters.isEmpty() && 
+                            tagFilters.stream().anyMatch(tf -> tf.getValue() != null && !tf.getValue().isEmpty());
+        
+        // Check date range
+        boolean hasDateFilter = criteria.getStartDate() != null || criteria.getEndDate() != null;
+        
+        return !hasTagFilters && !hasDateFilter;
+    }
+
+    /**
+     * Applies tag-based filters to a list of photos using the given logical operator (AND/OR).
+     * Supports up to two tag filters.
+     * 
+     * @param photos the list of photos to filter
+     * @param tagFilters the list of tag filters to apply
+     * @param logicalOperator the logical operator ("AND" or "OR") used to combine tag filters
+     * @return a list of photos that match the tag filter criteria
+     */
+    private List<Photo> applyTagFilters(List<Photo> photos, List<TagFilter> tagFilters, String logicalOperator) {
+        List<Photo> filteredPhotos = new ArrayList<>();
+        
+        // Check if we only have one tag filter
+        if (tagFilters.size() == 1 || tagFilters.get(1).getValue() == null || tagFilters.get(1).getValue().isEmpty()) {
+            TagFilter filter = tagFilters.get(0);
+            // Only apply if the filter has a value
+            if (filter.getValue() != null && !filter.getValue().isEmpty()) {
+                for (Photo photo : photos) {
+                    if (photoMatchesTagFilter(photo, filter)) {
+                        filteredPhotos.add(photo);
+                    }
+                }
+            } else {
+                // No valid tag filter, return original list
+                return photos;
+            }
+        } else {
+            // We have two tag filters
+            TagFilter filter1 = tagFilters.get(0);
+            TagFilter filter2 = tagFilters.get(1);
+            
+            // Apply based on logical operator
+            if ("AND".equalsIgnoreCase(logicalOperator)) {
+                for (Photo photo : photos) {
+                    if (photoMatchesTagFilter(photo, filter1) && photoMatchesTagFilter(photo, filter2)) {
+                        filteredPhotos.add(photo);
+                    }
+                }
+            } else if ("OR".equalsIgnoreCase(logicalOperator)) {
+                for (Photo photo : photos) {
+                    if (photoMatchesTagFilter(photo, filter1) || photoMatchesTagFilter(photo, filter2)) {
+                        filteredPhotos.add(photo);
+                    }
+                }
+            } else {
+                // No logical operator specified but we have two filters
+                // Default to OR behavior
+                for (Photo photo : photos) {
+                    if (photoMatchesTagFilter(photo, filter1) || photoMatchesTagFilter(photo, filter2)) {
+                        filteredPhotos.add(photo);
+                    }
+                }
+            }
+        }
+        
+        return filteredPhotos;
+    }
+    
+    /**
+     * Determines if a photo contains a tag that matches the provided tag filter.
+     * 
+     * @param photo the photo to check
+     * @param filter the tag filter to match against
+     * @return true if the photo has a tag that matches the filter; false otherwise
+     */
+    private boolean photoMatchesTagFilter(Photo photo, TagFilter filter) {
+        for (Tag tag : photo.getTags()) {
+            if (tag.getName().equalsIgnoreCase(filter.getName()) && 
+                tag.getValue().equalsIgnoreCase(filter.getValue())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a photo's date falls within the specified date range.
+     * 
+     * @param photo the photo whose date is being checked
+     * @param startDate the start date of the range (inclusive); can be null
+     * @param endDate the end date of the range (inclusive); can be null
+     * @return true if the photo's date is within the specified range; false otherwise
+     */
+    private boolean isWithinDateRange(Photo photo, LocalDate startDate, LocalDate endDate) {
+        LocalDate photoDate = photo.getDate();
+        
+        if (startDate != null && endDate != null) {
+            return !photoDate.isBefore(startDate) && !photoDate.isAfter(endDate);
+        } else if (startDate != null) {
+            return !photoDate.isBefore(startDate);
+        } else if (endDate != null) {
+            return !photoDate.isAfter(endDate);
+        }
+        
+        return true; // No date filters
+    }
+
+    /**
+     * Handles the search button action. Filters photos based on the current search text and filters,
+     * removes duplicates, and displays the results in a new window.
+     */
     @FXML
     private void handleSearch() {
-
-        System.out.println("Filter results: ");
-        for (TagFilter tagFilter : currentFilterCriteria.getTagFilters()) {
-            System.out.println(tagFilter.getName() + " = " + tagFilter.getValue());
-        }
-        System.out.println(currentFilterCriteria.getLogicalOperator());
-        System.out.println(currentFilterCriteria.getStartDate());
-        System.out.println(currentFilterCriteria.getEndDate());
-
-        // TODO: Implement search logic and display photos on a new stage
-
-
-        // Creating a PhotoCard
-        List<Photo> searchResultPhotos = new ArrayList<>(); 
+        List<Photo> searchResults = filterPhotos();
         
-        //Loop through albums and photos
-        for (Album album : user.getAlbums()){
-            for (Photo photo : album.getPhotos()){
-                boolean matchesCriteria = true;
-                //Checking tag filters 
-                for (TagFilter tagFilter : currentTagFilterCriteria.getTagFilters()){
-                    if (!photo.hasTag(tagFilter.getName(), tagFilter.getValue())){
-                        matchesCriteria = false;
-                        if (currentFilterCriteria.getLogicalOperator().equals("AND")){
-                            break;
-                        }
-                    } else if (currentFilterCriteria.getLogicalOperator().equals("OR")){
-                        matchesCriteria = true;
-                        break;
-                    }
-                }
-
-                //checking date range
-                if (matchesCriteria){
-                    if (photo.getDate().isBefore(currentFilterCriteria.getStartDate()) ||
-                        photo.getDate().isAfter(currentFilterCriteria.getEndDate())){
-                        matchesCriteria = false;
-                    }
-                }
-
-                //adding photo to list if matches criteria
-                if (matchesCriteria){
-                    searchResultPhotos.add(photo);
-                }
+        // Remove duplicate photos
+        Set<String> seenPaths = new HashSet<>();
+        List<Photo> uniquePhotos = new ArrayList<>();
+        for (Photo photo : searchResults) {
+            String path = photo.getFilepath(); // or another unique field
+            if (seenPaths.add(path)) {
+                uniquePhotos.add(photo);
             }
         }
+        searchResults.clear();
+        searchResults.addAll(uniquePhotos);
         
-        for (Photo photo : searchResultPhotos) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/photos32/view/PhotoCard.fxml"));
-                StackPane photoCard = loader.load();
+        try {
+            FXMLLoader loader = 
+                new FXMLLoader(getClass().getResource("/photos32/view/SearchResults.fxml"));
+            Parent root = loader.load();
 
-                // Assign the associated album with the photo
-                AlbumViewController albumView = new AlbumViewController();
-                for (Album album : user.getAlbums()) {
-                    for (Photo p : album.getPhotos()) {
-                        if (p.equals(photo)) albumView.setAlbum(album);
-                    }
-                }
-                albumView.setUser(user);
-                albumView.setParentController(this);
-    
-                PhotoCardController photoCardController = loader.getController();
-                photoCardController.setPhoto(photo);
-                photoCardController.setParentController(albumView); // Pass reference to parent
-                
-                // At this point, you can add the photo cards to the pop up window.
-                // photoContainer.getChildren().add(photoCard);
-                try {
-                    FXMLLoader loader = new
-                        FXMLLoader(getClass().getResource("/photo32/view/SearchResultsPopup.fxml"));
-                    Parent root = loader.load();
+            SearchResultsPopupController controller = loader.getController();
+            controller.setSearchResults(searchResults);
+            controller.setParentController(this);
 
-                    SearchResultsPopupController controller = loader.getController();
-                    controller.setSearchResultPhotos(searchResultPhotos);
+            Stage stage = new Stage();
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.setWidth(700);
+            stage.setHeight(500);
+            stage.setMinWidth(700);
+            stage.setMinHeight(500);
+            stage.initOwner(albumContainer.getScene().getWindow());
+            stage.setTitle("Search Results");
+            stage.setScene(new Scene(root));
+            stage.show();
 
-                    Stage stage = new Stage();
-                    stage.setTitle("Search Results");
-                    stage.setScene(new Scene(root));
-                    stage.show();
-                }
+            controller.populatePhotoTiles();
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        // try {
-        //     FXMLLoader loader = 
-        //         new FXMLLoader(getClass().getResource("/photos32/view/SearchResultsPopup.fxml"));
-        //     Parent root = loader.load();
-
-        //     SearchResultsPopupController controller = loader.getController();
-        //     controller.setSearchResults(searchresults);
-        //     controller.setParentController(this);
-
-        //     Stage stage = new Stage();
-        //     stage.initModality(Modality.WINDOW_MODAL);
-        //     stage.initOwner(albumContainer.getScene().getWindow());
-        //     stage.setTitle("Search Results");
-        //     stage.setScene(new Scene(root));
-        //     stage.show();
-
-        //     controller.populatePhotoTiles();
-
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
     }
 
     /**
@@ -394,7 +559,7 @@ public class UserHomeController {
 
                 Stage stage = (Stage)signOutButton.getScene().getWindow();
                 stage.setScene(scene);
-                stage.setTitle("Photo32 Login");
+                stage.setTitle("Photos32 Login");
             } catch (IOException e) {
                 e.printStackTrace();
             }

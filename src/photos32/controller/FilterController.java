@@ -14,6 +14,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller class for the filter pop up window.
+ * Displays a UI for the user to enter filter criteria.
+ * Connected to FilterWindow.fxml.
+ */
 public class FilterController {
 
     @FXML private ComboBox<String> tagName1, tagName2, logicalOperator;
@@ -114,7 +119,7 @@ public class FilterController {
     }
 
     @FXML
-    public void onTagValueEntered() {
+    private void onTagValueEntered() {
         // Move focus away from the text field 
         applyButton.requestFocus();
     }
@@ -171,66 +176,130 @@ public class FilterController {
         stage.close();
     }
 
-    // Inner class to hold filter criteria
+    /**
+     * Inner class to hold filter criteria.
+     */
     public static class FilterCriteria {
         private List<TagFilter> tagFilters = new ArrayList<>();
         private String logicalOperator;
         private LocalDate startDate;
         private LocalDate endDate;
 
+        /**
+         * Adds a new tag filter with the specified name and value to the list of filters.
+         *
+         * @param name  the tag name to filter by
+         * @param value the tag value to filter by
+         */
         public void addTagFilter(String name, String value) {
             tagFilters.add(new TagFilter(name, value));
         }
 
+        /**
+         * Returns the list of tag filters.
+         *
+         * @return the list of {@code TagFilter} objects
+         */
         public List<TagFilter> getTagFilters() {
             return tagFilters;
         }
 
+        /**
+         * Returns the logical operator used to combine tag filters (e.g., "AND" or "OR").
+         *
+         * @return the logical operator as a string
+         */
         public String getLogicalOperator() {
             return logicalOperator;
         }
 
+        /**
+         * Sets the logical operator used to combine tag filters.
+         *
+         * @param logicalOperator the logical operator to set ("AND" or "OR")
+         */
         public void setLogicalOperator(String logicalOperator) {
             this.logicalOperator = logicalOperator;
         }
 
+        /**
+         * Returns the start date for the date range filter.
+         *
+         * @return the start date, or {@code null} if not set
+         */
         public LocalDate getStartDate() {
             return startDate;
         }
 
+        /**
+         * Sets the start date for the date range filter.
+         *
+         * @param startDate the start date to set
+         */
         public void setStartDate(LocalDate startDate) {
             this.startDate = startDate;
         }
 
+        /**
+         * Returns the end date for the date range filter.
+         *
+         * @return the end date, or {@code null} if not set
+         */
         public LocalDate getEndDate() {
             return endDate;
         }
 
+        /**
+         * Sets the end date for the date range filter.
+         *
+         * @param endDate the end date to set
+         */
         public void setEndDate(LocalDate endDate) {
             this.endDate = endDate;
         }
 
+        /**
+         * Determines whether any filters have been set (either tag filters or date range).
+         *
+         * @return {@code true} if any filters are present; {@code false} otherwise
+         */
         public boolean hasFilters() {
             return !tagFilters.isEmpty() || startDate != null || endDate != null;
         }
     }
 
     /**
-     * Inner class to represent a tag name-value pair filter
+     * Inner class to represent a tag name-value pair filter.
      */
     public static class TagFilter {
         private String name;
         private String value;
 
+        /**
+         * Constructs a new TagFilter with the specified name and value.
+         *
+         * @param name  the name of the tag
+         * @param value the value of the tag
+         */
         public TagFilter(String name, String value) {
             this.name = name;
             this.value = value;
         }
 
+        /**
+         * Returns the name of the tag filter.
+         *
+         * @return the tag name
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Returns the value of the tag filter.
+         *
+         * @return the tag value
+         */
         public String getValue() {
             return value;
         }

@@ -2,6 +2,9 @@ package photos32.service;
 
 import javafx.scene.control.Alert;
 
+/**
+ * Service class for handling alerts.
+ */
 public class AlertUtil {
 
     /**

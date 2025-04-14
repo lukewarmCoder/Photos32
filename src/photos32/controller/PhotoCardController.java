@@ -17,6 +17,11 @@ import photos32.model.Photo;
 import photos32.service.DataStore;
 import photos32.service.PhotoService;
 
+/**
+ * Controller class for the photo cards.
+ * Handles UI interactions related to buttons on the photo card.
+ * Connected to PhotoCard.fxml.
+ */
 public class PhotoCardController {
 
     @FXML private StackPane photoCard;
@@ -64,10 +69,20 @@ public class PhotoCardController {
         caption.setOnMouseClicked(event -> handleViewPhoto());
     }
 
+    /**
+     * Sets the parent controller for this controller.
+     * 
+     * @param controller The AlbumViewController that acts as the parent controller.
+     */
     public void setParentController(AlbumViewController controller) {
         this.parentController = controller;
     }
 
+    /**
+     * Sets whether this view is displaying search results.
+     * 
+     * @param isSearchResult A boolean indicating if this is a search result view.
+     */
     public void setIsSearchResult(boolean isSearchResult) {
         this.isSearchResult = isSearchResult;
     }
@@ -113,14 +128,14 @@ public class PhotoCardController {
                 thumbnail.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 0);");
             } else {
                 // Set a placeholder image if file doesn't exist
-                Image placeholder = new Image(getClass().getResourceAsStream("/photos32/resources/placeholder.png"));
+                Image placeholder = new Image(getClass().getResourceAsStream("/photos32/data/stockphotos/placeholder.png"));
                 thumbnail.setImage(placeholder);
             }
         } catch (Exception e) {
             System.err.println("Error loading image: " + e.getMessage());
             // Set placeholder on error
             try {
-                Image placeholder = new Image(getClass().getResourceAsStream("/photos32/resources/placeholder.png"));
+                Image placeholder = new Image(getClass().getResourceAsStream("/photos32/data/stockphotos/placeholder.png"));
                 thumbnail.setImage(placeholder);
             } catch (Exception ex) {
                 // If even placeholder fails, just log it
@@ -136,9 +151,6 @@ public class PhotoCardController {
         }
     }
 
-    /**
-     * Opens the photo in a detailed view.
-     */
     @FXML
     private void handleViewPhoto() {
         parentController.openPhoto(photo, isSearchResult);
@@ -166,9 +178,6 @@ public class PhotoCardController {
         }
     }
 
-    /**
-     * Updates the caption label based on the photo's caption.
-     */
     private void updateCaptionDisplay() {
         if (photo.getCaption() != null && !photo.getCaption().isEmpty()) {
             caption.setText(photo.getCaption());

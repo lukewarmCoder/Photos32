@@ -25,6 +25,11 @@ import photos32.service.AlertUtil;
 import photos32.service.DataStore;
 import photos32.service.PhotoService;
 
+/**
+ * Controller class for individual photo displaying view.
+ * Handles UI interactions related to displaying and maniulating individual photos.
+ * Connected to PhotoView.fxml.
+ */
 public class PhotoViewController {
 
     @FXML private StackPane imageContainer;
@@ -41,10 +46,21 @@ public class PhotoViewController {
     private Photo photo;
     private User user;
 
+    /**
+     * Sets the parent AlbumViewController for this controller.
+     * 
+     * @param controller the parent AlbumViewController
+     */
     public void setParentController(AlbumViewController controller) {
         this.parentController = controller;
     }
 
+    /**
+     * Sets whether the current view is a search result.
+     * If it is a search result, the navigation buttons will be hidden.
+     * 
+     * @param isSearchResult a boolean indicating if the view is a search result
+     */
     public void setIsSearchResult(boolean isSearchResult) {
         this.isSearchResult = isSearchResult;
         if (isSearchResult) {
@@ -53,11 +69,21 @@ public class PhotoViewController {
         }
     }
 
+    /**
+     * Sets the current photo to display.
+     * 
+     * @param photo the Photo to display
+     */
     public void setPhoto(Photo photo) {
         this.photo = photo;
         updateTagListView();
     }
 
+    /**
+     * Sets the user who owns the photo being viewed.
+     * 
+     * @param user the User who owns the photo
+     */
     public void setUser(User user) {
         this.user = user;
     }
@@ -186,9 +212,6 @@ public class PhotoViewController {
         }
     }
 
-    /**
-     * Updates the caption label based on the photo's caption.
-     */
     private void updateCaptionDisplay() {
         if (photo.getCaption() != null && !photo.getCaption().isEmpty()) {
             caption.setText(photo.getCaption());
@@ -315,13 +338,19 @@ public class PhotoViewController {
 
                 Stage stage = (Stage)backButton.getScene().getWindow();
                 stage.setScene(scene);
-                stage.setTitle("Photo32");
+                stage.setTitle("Photos32");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    /**
+     * Handles the action of navigating back to the search results screen.
+     * 
+     * Loads the SearchResults.fxml, sets the search results, and transitions to
+     * the SearchResults view.
+     */
     private void handleBackToSearchResults() {
         try {
             FXMLLoader loader = new
@@ -329,11 +358,15 @@ public class PhotoViewController {
             Scene scene = new Scene(loader.load());
 
             SearchResultsPopupController controller = loader.getController();
-            controller.setSearchResults(user.getAlbums().get(0).getPhotos());
+            controller.setSearchResults(parentController.getSearchResultsController().getSearchResults());
             controller.setParentController(parentController.getParentController());
 
             Stage stage = (Stage)backButton.getScene().getWindow();
             stage.setTitle("Search Results");
+            stage.setWidth(700);
+            stage.setHeight(500);
+            stage.setMinWidth(700);
+            stage.setMinHeight(500);
             stage.setScene(scene);
             stage.show();
 

@@ -17,7 +17,11 @@ import javafx.util.Duration;
 
 import java.util.Optional;
 
-    
+/**
+ * Controller class for the album cards.
+ * Handles UI interactions related to buttons on the album card.
+ * Connected to AlbumCard.fxml.
+ */
 public class AlbumCardController {
     @FXML private VBox albumCard;
     @FXML private Label albumTitle;
@@ -27,10 +31,20 @@ public class AlbumCardController {
     private Album album;
     private UserHomeController parentController;
     
+    /**
+     * Sets the title of the album.
+     * 
+     * @param title The title to set for the album.
+     */
     public void setAlbumTitle(String title) {
         albumTitle.setText(title);
     }
 
+    /**
+     * Sets the parent controller for this controller.
+     * 
+     * @param controller The UserHomeController that acts as the parent controller.
+     */
     public void setParentController(UserHomeController controller) {
         this.parentController = controller;
     }
