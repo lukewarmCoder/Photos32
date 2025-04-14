@@ -70,14 +70,13 @@ Before running this project, make sure you have the following installed:
         - **Username:** Your GitHub username
         - **Password:** Paste the **personal access token**
 
-
-3. Navigate to the project folder:
+    **Note:** If the PAT method doesn't work, you can always just download the Zip file manually. Just be sure to rename the extracted folder from "Photos32-main" to "Photos32".
+   
+4. Navigate to the project folder:
    
     ```
     cd Photos32
     ```
-
-    **Note:** If the PAT method doesn't work, you can always just download the Zip file manually. Just be sure to rename the extracted folder from "Photos32-main" to "Photos32".
 
 ### Step 2: Set the path to your JavaFX SDK
 
