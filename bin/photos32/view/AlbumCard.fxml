@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="albumCard" prefHeight="250.0" prefWidth="250.0" style="-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0); -fx-background-radius: 5;" xmlns="http://javafx.com/javafx/21.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="photos32.controller.AlbumCardController">
+   <children>
+      <!-- Header with title and menu button -->
+      <HBox alignment="CENTER" prefHeight="76.0" prefWidth="250.0" style="-fx-background-color: #e0e0e0;">
+         <children>
+            <Label fx:id="albumTitle" prefHeight="23.0" prefWidth="414.0" text="">
+               <font>
+                  <Font size="18.0" />
+               </font>
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Label>
+            <Region prefHeight="39.0" prefWidth="199.0" HBox.hgrow="ALWAYS" />
+            <!-- Option 1: Menu Button with just an icon -->
+            <MenuButton fx:id="menuButton" mnemonicParsing="false" style="-fx-padding: 0;">
+              <graphic>
+                <Label style="-fx-font-size: 14px; -fx-text-fill: #555555;" />
+              </graphic>
+              <items>
+                <MenuItem mnemonicParsing="false" onAction="#handleRename" text="Rename" />
+                <MenuItem mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
+              </items>
+            </MenuButton>
+         </children>
+         <padding>
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+         </padding>
+      </HBox>
+      
+      <!-- Content area for album image or other information -->
+      <VBox alignment="CENTER" prefHeight="185.0" prefWidth="250.0" style="-fx-background-color: #f0f0f0; -fx-background-radius: 5;">
+         <!-- You can add album content here -->
+      </VBox>
+      
+      <!-- Bottom bar with info text -->
+      <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="250.0" style="-fx-background-color: #e0e0e0; -fx-background-radius: 0 0 5 5;">
+         <children>
+            <Label fx:id="dateRangeLabel" text="">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Label>
+            <Region prefHeight="30.0" prefWidth="63.0" HBox.hgrow="ALWAYS" />
+            <Label fx:id="numOfPhotos" text="# of photos" />
+         </children>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+         <padding>
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+         </padding>
+      </HBox>
+   </children>
+</VBox>
