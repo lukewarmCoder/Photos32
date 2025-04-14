@@ -70,6 +70,7 @@ Before running this project, make sure you have the following installed:
         - **Username:** Your GitHub username
         - **Password:** Paste the **personal access token**
 
+    **Note:** If the PAT method doesn't work, you can always just download the zip file manually and extract it. Just be sure to change the name from "Photos32-main" to "Photos32".
 
 3. Navigate to the project folder:
    
