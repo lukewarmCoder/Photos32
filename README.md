@@ -33,7 +33,7 @@ Photos32/
 │       │   ├── LoginController.java
 │       │   ├── PhotoCardController.java
 │       │   ├── PhotoViewController.java
-│       │   ├── SearchResultsController.java
+│       │   ├── SearchResultsPopupController.java
 │       │   └── UserHomeController.java
 │       ├── service/
 │       │   ├── AlertUtil.java
