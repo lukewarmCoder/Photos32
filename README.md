@@ -55,10 +55,8 @@ Before running this project, make sure you have the following installed:
 
 1. 🔐 Generate a GitHub Personal Access Token (PAT)
     - Go to https://github.com/settings/tokens
-    - Click "Generate new token".
-    - Set a name (e.g., Clone Access) and choose an expiration.
-    - Under Repository access, select "Only select repositories" and choose **lukewarmCoder/Photos32**.
-    - Open Repository permissions, scroll down to "Contents", and change access to **"Read and write"**.
+    - Click "Generate new token" and choose **"Generate new token (**classic**)"** from the dropdown.
+    - Under "Select scopes" check the box next to **"repo"**.
     - Click "Generate token" at the bottom.
     - Copy the token and save it somewhere safe!
 
