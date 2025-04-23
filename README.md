@@ -1,6 +1,11 @@
 # Photos32
 A multi-user photo application that allows storage and management of photos.
 
+## Collaborators
+Luke Fernandez - lmf232
+
+Esha Tripathi - et522
+
 ## Project Structure
 ```
 Photos32/
